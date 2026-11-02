@@ -11,4 +11,10 @@ Aplicação web para análise sintática básica de código JavaScript.
 
 ## Como executar
 
-Abra o arquivo `index.html` no navegador. Digite ou cole um código e selecione **Analisar código**. Também é possível usar `Ctrl + Enter`.
+Compile o TypeScript antes de abrir a página:
+
+```bash
+tsc.cmd
+```
+
+Depois, abra o arquivo `index.html` no navegador. O navegador carrega o `script.js` gerado a partir de `script.ts`.
