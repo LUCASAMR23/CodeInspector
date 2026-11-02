@@ -3,25 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Analisador Sintático de JavaScript</title>
+  <meta name="description" content="Analisador sintático de código JavaScript baseado em pilha.">
+  <title>Code Inspector | Analisador Sintático</title>
   <link rel="stylesheet" href="style.css">
   <script src="script.js" defer></script>
 </head>
 <body>
-  <main>
-    <header>
-      <h1>Analisador Sintático</h1>
-      <p>Este projeto verificará parênteses, colchetes e chaves em códigos JavaScript.</p>
+  <main class="pagina">
+    <header class="cabecalho">
+      <p class="selo">ESTRUTURA DE DADOS • PILHA</p>
+      <h1>Code Inspector</h1>
+      <p>Analise código JavaScript, destaque as palavras reservadas e encontre delimitadores sem correspondência.</p>
     </header>
-
-    <label for="codigo">Código JavaScript</label>
-    <textarea id="codigo" name="codigo" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="Escreva ou cole seu código aqui"></textarea>
-
-    <button id="botao-analisar" type="button">Analisar código</button>
-
-    <section class="painel-resultado" aria-labelledby="titulo-resultado">
-      <h2 id="titulo-resultado">Resultado da análise</h2>
-      <p id="resultado" role="status" aria-live="polite">Aguardando análise</p>
+    <section class="editor-card" aria-labelledby="titulo-editor">
+      <div class="editor-topo">
+        <h2 id="titulo-editor">Código JavaScript</h2>
+        <span id="posicao-cursor" aria-live="polite">Linha 1, coluna 1</span>
+      </div>
+      <div class="editor" id="editor">
+        <pre id="realce" aria-hidden="true"><code id="codigo-realce"></code></pre>
+        <textarea id="codigo" name="codigo" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código JavaScript" placeholder="Escreva ou cole seu código aqui">function saudacao(nome) {
+  if (nome) {
+    return `Olá, ${nome}!`;
+  }
+}</textarea>
+      </div>
+      <div class="acoes">
+        <button id="botao-analisar" type="button">Analisar código</button>
+        <button id="botao-limpar" class="secundario" type="button">Limpar</button>
+      </div>
+    </section>
+    <section class="painel-resultado neutro" id="painel-resultado" aria-labelledby="titulo-resultado">
+      <div class="resultado-icone" aria-hidden="true">i</div>
+      <div>
+        <h2 id="titulo-resultado">Resultado da análise</h2>
+        <p id="resultado" role="status" aria-live="polite">Pronto para analisar. Use o botão ou pressione Ctrl + Enter.</p>
+      </div>
+    </section>
+    <section class="ajuda" aria-label="Como funciona">
+      <h2>Como funciona?</h2>
+      <p>Os caracteres de abertura <code>(</code>, <code>[</code> e <code>{</code> são inseridos em uma pilha. Cada fechamento precisa corresponder ao último elemento inserido. Strings e comentários são ignorados nessa verificação.</p>
     </section>
   </main>
 </body>
