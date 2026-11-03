@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "lib": ["DOM", "ES2021"],
+    "strict": true,
+    "noEmitOnError": true,
+    "skipLibCheck": true
+  },
+  "include": ["script.ts"]
+}
