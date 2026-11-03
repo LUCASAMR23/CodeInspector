@@ -1,49 +1,32 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Analisador sintático de código JavaScript baseado em pilha.">
-  <title>Code Inspector | Analisador Sintático</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Verificador simples de delimitadores JavaScript.">
+  <title>Analisador Sintático</title>
   <link rel="stylesheet" href="style.css">
   <script src="script.js" defer></script>
 </head>
 <body>
-  <main class="pagina">
-    <header class="cabecalho">
-      <p class="selo">ESTRUTURA DE DADOS • PILHA</p>
-      <h1>Code Inspector</h1>
-      <p>Analise código JavaScript, destaque as palavras reservadas e encontre delimitadores sem correspondência.</p>
-    </header>
-    <section class="editor-card" aria-labelledby="titulo-editor">
-      <div class="editor-topo">
-        <h2 id="titulo-editor">Código JavaScript</h2>
-        <span id="posicao-cursor" aria-live="polite">Linha 1, coluna 1</span>
-      </div>
-      <div class="editor" id="editor">
-        <pre id="realce" aria-hidden="true"><code id="codigo-realce"></code></pre>
-        <textarea id="codigo" name="codigo" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Código JavaScript" placeholder="Escreva ou cole seu código aqui">function saudacao(nome) {
-  if (nome) {
-    return `Olá, ${nome}!`;
-  }
-}</textarea>
-      </div>
-      <div class="acoes">
-        <button id="botao-analisar" type="button">Analisar código</button>
-        <button id="botao-limpar" class="secundario" type="button">Limpar</button>
-      </div>
+  <main>
+    <h1>Analisador Sintático</h1>
+    <p class="descricao">Este projeto verificará parênteses, colchetes e chaves em códigos JavaScript.</p>
+    <label for="codigo">Código JavaScript</label>
+    <textarea id="codigo" spellcheck="false" aria-describedby="ajuda-codigo" placeholder="Escreva ou cole seu código aqui"></textarea>
+    <small id="ajuda-codigo">Strings e comentários são ignorados na verificação.</small>
+    <div class="acoes">
+      <button id="botao-analisar" type="button">Analisar código</button>
+    </div>
+    <section id="painel-resultado" class="resultado neutro" aria-live="polite">
+      <h2>Resultado</h2>
+      <p id="resumo-resultado">Aguardando análise</p>
+      <ul id="lista-erros" hidden></ul>
     </section>
-    <section class="painel-resultado neutro" id="painel-resultado" aria-labelledby="titulo-resultado">
-      <div class="resultado-icone" aria-hidden="true">i</div>
-      <div>
-        <h2 id="titulo-resultado">Resultado da análise</h2>
-        <p id="resultado" role="status" aria-live="polite">Pronto para analisar. Use o botão ou pressione Ctrl + Enter.</p>
-      </div>
-    </section>
-    <section class="ajuda" aria-label="Como funciona">
-      <h2>Como funciona?</h2>
-      <p>Os caracteres de abertura <code>(</code>, <code>[</code> e <code>{</code> são inseridos em uma pilha. Cada fechamento precisa corresponder ao último elemento inserido. Strings e comentários são ignorados nessa verificação.</p>
-    </section>
+    <details>
+      <summary>Ver o código usado para encontrar os erros</summary>
+      <pre><code id="codigo-analise"></code></pre>
+    </details>
   </main>
 </body>
 </html>
