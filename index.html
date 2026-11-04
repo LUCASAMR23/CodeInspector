@@ -15,24 +15,22 @@
     <p class="descricao">Verifique parênteses, colchetes e chaves e destaque palavras reservadas de JavaScript.</p>
 
     <label for="codigo">Código JavaScript</label>
-    <textarea id="codigo" spellcheck="false" autocapitalize="off" autocomplete="off"
-      aria-describedby="ajuda-codigo" placeholder="Escreva ou cole seu código aqui"></textarea>
-    <small id="ajuda-codigo">Strings e comentários são ignorados na verificação.</small>
+    <div id="editor-codigo" class="editor-codigo">
+      <pre id="camada-destaque" class="camada-destaque" aria-hidden="true"><code id="codigo-destacado"></code></pre>
+      <textarea id="codigo" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off"
+        aria-describedby="ajuda-codigo" placeholder="Escreva ou cole seu código aqui"></textarea>
+    </div>
+    <small id="ajuda-codigo">Palavras reservadas, números e strings ganham cor ao digitar. Strings e comentários são ignorados na verificação.</small>
 
     <div class="acoes">
       <button id="botao-analisar" type="button">Analisar código</button>
     </div>
 
-    <!-- 2. Resultado da análise e código com destaque -->
+    <!-- 2. Resultado da análise -->
     <section id="painel-resultado" class="resultado neutro" aria-live="polite">
       <h2>Resultado</h2>
       <p id="resumo-resultado">Aguardando análise</p>
       <ul id="lista-erros" hidden></ul>
-    </section>
-
-    <section id="painel-destaque" class="resultado" aria-labelledby="titulo-destaque" hidden>
-      <h2 id="titulo-destaque">Código com destaque</h2>
-      <pre tabindex="0" aria-labelledby="titulo-destaque"><code id="codigo-destacado"></code></pre>
     </section>
 
     <p class="observacao">A análise verifica delimitadores; não valida toda a sintaxe do JavaScript.</p>

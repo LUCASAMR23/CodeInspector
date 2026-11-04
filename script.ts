@@ -16,7 +16,6 @@ interface Erro {
 
 interface Analise {
   erros: Erro[];
-  codigoLimpo: string;
 }
 
 // 2. Elementos da página
@@ -35,13 +34,22 @@ const botaoAnalisar = obterElemento<HTMLButtonElement>("botao-analisar");
 const painelResultado = obterElemento<HTMLElement>("painel-resultado");
 const resumoResultado = obterElemento<HTMLParagraphElement>("resumo-resultado");
 const listaErros = obterElemento<HTMLUListElement>("lista-erros");
-const painelDestaque = obterElemento<HTMLElement>("painel-destaque");
+const editorCodigo = obterElemento<HTMLElement>("editor-codigo");
+const camadaDestaque = obterElemento<HTMLPreElement>("camada-destaque");
 const codigoDestacado = obterElemento<HTMLElement>("codigo-destacado");
 const codigoAnalise = obterElemento<HTMLElement>("codigo-analise");
 
 
-// 3. Pares de delimitadores e palavras da linguagem
+// 3. Pares de delimitadores e regras de destaque
 const pares: Record<string, string> = { "(": ")", "[": "]", "{": "}" };
+const padraoTextos = /\/\*[\s\S]*?(?:\*\/|$)|\/\/[^\r\n\u2028\u2029]*|"(?:\\[\s\S]|[^"\\])*"?|'(?:\\[\s\S]|[^'\\])*'?|`(?:\\[\s\S]|[^`\\])*`?/g;
+const padraoNumeros = /(?:0[xX][\da-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+)n?|\d[\d_]*n|(?:\d[\d_]*(?:\.[\d_]*)?|\.\d[\d_]*)(?:[eE][+-]?[\d_]+)?/;
+const padraoPalavras = /[\p{ID_Continue}$\u200c\u200d]+/u;
+// Textos vêm primeiro para não destacar números ou palavras dentro deles.
+const padraoDestaques = new RegExp(
+  [padraoTextos.source, padraoNumeros.source, padraoPalavras.source].join("|"), "gu"
+);
+
 const palavrasReservadas = new Set([
   "async", "await", "break", "case", "catch", "class", "const", "continue",
   "debugger", "default", "delete", "do", "else", "enum", "export", "extends",
@@ -55,10 +63,8 @@ const palavrasReservadas = new Set([
 // 4. Preparação do texto e formatação das posições
 // shortcut: regex e expressões em crases exigem leitura léxica mais completa; ampliar se forem usadas.
 function ignorarStringsEComentarios(codigo: string): string {
-  const trechosIgnorados = /\/\*[\s\S]*?(?:\*\/|$)|\/\/[^\r\n\u2028\u2029]*|"(?:\\[\s\S]|[^"\\])*"?|'(?:\\[\s\S]|[^'\\])*'?|`(?:\\[\s\S]|[^`\\])*`?/g;
-
   // Espaços mantêm os índices originais; quebras mantêm as linhas originais.
-  return codigo.replace(trechosIgnorados, trecho => trecho.replace(/[^\r\n\u2028\u2029]/g, " "));
+  return codigo.replace(padraoTextos, trecho => trecho.replace(/[^\r\n\u2028\u2029]/g, " "));
 }
 
 function formatarPosicao(posicao: Posicao): string {
@@ -126,35 +132,50 @@ function analisarCodigo(codigo: string): Analise {
   }
 
   return {
-    erros: erros.sort((primeiro, segundo) => primeiro.indice - segundo.indice),
-    codigoLimpo
+    erros: erros.sort((primeiro, segundo) => primeiro.indice - segundo.indice)
   };
 }
 
 
-// 6. Destaque de palavras: texto digitado nunca é interpretado como HTML
-function destacarPalavras(codigo: string, codigoLimpo: string): void {
+// 6. Destaque no próprio campo: texto digitado nunca é interpretado como HTML
+function destacarCodigo(codigo: string): void {
   const fragmento = document.createDocumentFragment();
-  const palavras = codigoLimpo.matchAll(/[\p{ID_Continue}$\u200c\u200d]+/gu);
   let inicio = 0;
 
-  for (const palavra of palavras) {
-    if (!palavrasReservadas.has(palavra[0])) {
+  for (const trecho of codigo.matchAll(padraoDestaques)) {
+    const texto = trecho[0];
+    let classe = "";
+
+    if (/^["'`]/.test(texto)) {
+      classe = "string";
+    } else if (/^(?:\d|\.\d)/.test(texto)) {
+      classe = "numero";
+    } else if (palavrasReservadas.has(texto)) {
+      classe = "palavra-reservada";
+    }
+
+    if (!classe) {
       continue;
     }
 
-    fragmento.append(document.createTextNode(codigo.slice(inicio, palavra.index)));
+    fragmento.append(document.createTextNode(codigo.slice(inicio, trecho.index)));
 
     const destaque = document.createElement("span");
-    destaque.className = "palavra-reservada";
-    destaque.textContent = palavra[0];
+    destaque.className = classe;
+    destaque.textContent = texto;
     fragmento.append(destaque);
 
-    inicio = palavra.index + palavra[0].length;
+    inicio = trecho.index + texto.length;
   }
 
-  fragmento.append(document.createTextNode(codigo.slice(inicio)));
+  // A linha extra permite alinhar a rolagem até o fim, inclusive após Enter.
+  fragmento.append(document.createTextNode(codigo.slice(inicio) + "\n "));
   codigoDestacado.replaceChildren(fragmento);
+}
+
+function sincronizarRolagem(): void {
+  camadaDestaque.scrollTop = campoCodigo.scrollTop;
+  camadaDestaque.scrollLeft = campoCodigo.scrollLeft;
 }
 
 
@@ -164,8 +185,13 @@ function limparResultado(): void {
   resumoResultado.textContent = "Aguardando análise";
   listaErros.replaceChildren();
   listaErros.hidden = true;
-  codigoDestacado.replaceChildren();
-  painelDestaque.hidden = true;
+}
+
+function atualizarEditor(): void {
+  const codigo = campoCodigo.value;
+  limparResultado();
+  destacarCodigo(codigo);
+  sincronizarRolagem();
 }
 
 function mostrarResultado(): void {
@@ -173,13 +199,15 @@ function mostrarResultado(): void {
   limparResultado();
 
   if (codigo.trim() === "") {
+    destacarCodigo(codigo);
+    sincronizarRolagem();
     resumoResultado.textContent = "Digite um código para analisar";
     return;
   }
 
   const analise = analisarCodigo(codigo);
-  destacarPalavras(codigo, analise.codigoLimpo);
-  painelDestaque.hidden = false;
+  destacarCodigo(codigo);
+  sincronizarRolagem();
   painelResultado.className = `resultado ${analise.erros.length ? "erro" : "sucesso"}`;
 
   if (analise.erros.length === 0) {
@@ -203,9 +231,14 @@ function mostrarResultado(): void {
 
 // 8. Eventos e código disponível para explicar durante a apresentação
 botaoAnalisar.addEventListener("click", mostrarResultado);
-campoCodigo.addEventListener("input", limparResultado);
+campoCodigo.addEventListener("input", atualizarEditor);
+campoCodigo.addEventListener("scroll", sincronizarRolagem);
+
+atualizarEditor();
+editorCodigo.classList.add("com-destaque");
 
 codigoAnalise.textContent = `const pares = ${JSON.stringify(pares, null, 2)};\n\n`
+  + `const padraoTextos = ${padraoTextos};\n\n`
   + [ignorarStringsEComentarios, formatarPosicao, analisarCodigo]
     .map(funcao => funcao.toString())
     .join("\n\n");

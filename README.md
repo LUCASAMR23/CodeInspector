@@ -9,6 +9,10 @@ Abra `index.html` no navegador, mantendo `script.js` e `style.css` na mesma past
 O JavaScript já está pronto: não é necessário compilar ou instalar dependências
 para usar a página no computador do professor.
 
+Palavras reservadas ficam amarelas, números azuis e strings verdes no próprio
+campo enquanto você digita ou cola. Strings incluem as aspas que as delimitam.
+O botão “Analisar código” verifica os delimitadores e apresenta os erros.
+
 `script.ts` é o fonte TypeScript desta versão. `script.js` é sua versão para o
 navegador. Se editar o TypeScript e tiver o compilador disponível, gere o JavaScript
 novamente com `tsc.cmd`. Evite editar os dois arquivos separadamente.
@@ -22,7 +26,7 @@ O TypeScript está separado em oito blocos:
 3. Pares de delimitadores e palavras reservadas.
 4. Preparação do texto e formatação de posições.
 5. Análise com pilha.
-6. Destaque de palavras.
+6. Destaque de palavras no campo e sincronização da rolagem.
 7. Exibição e limpeza do resultado.
 8. Eventos e código exibido para a apresentação.
 
@@ -67,9 +71,16 @@ ordenada pela posição no código, mantendo o recurso de mostrar vários proble
 por espaços. As quebras de linha são preservadas. A expressão regular está
 isolada nessa função para facilitar o estudo do restante do analisador.
 
-Essa cópia serve tanto para verificar delimitadores quanto para encontrar palavras
-reservadas. A cópia é preparada uma vez por análise. O destaque é aplicado sobre
-o texto original, preservando os comentários e as strings na exibição.
+Essa cópia é preparada uma vez por análise e usada na verificação dos delimitadores.
+O destaque percorre o texto original, reconhecendo comentários e strings antes
+dos números e palavras. A regra de reconhecimento desses textos é compartilhada
+com a análise. Assim, números e palavras dentro de strings mantêm a cor da string,
+e o conteúdo dos comentários mantém a cor normal.
+
+`destacarCodigo()` escolhe uma classe CSS para cada trecho: `palavra-reservada`,
+`numero` ou `string`. O CSS define as três cores. Números incluem inteiros,
+decimais, notação científica e bases hexadecimal, binária e octal. Esse destaque
+não verifica se o literal numérico é válido em toda a gramática de JavaScript.
 
 O `Set` guarda a lista de palavras consultadas. As palavras são reconhecidas
 inteiras: `if` recebe cor, mas `ifTotal` não. Também destacamos `async`, palavras
@@ -78,6 +89,14 @@ análise do papel gramatical de cada palavra.
 
 O texto digitado é exibido com nós de texto e `textContent`, sem `innerHTML` ou
 `eval`. O conteúdo digitado nunca é executado.
+
+O editor tem um único campo visível. O `textarea` mantém a digitação, a seleção
+e o cursor nativos. Uma camada `pre`, sobreposta atrás dele, desenha o mesmo texto
+com as cores. Essa camada é ignorada por leitores de tela. O evento `input`
+atualiza o destaque e o evento `scroll` mantém a rolagem alinhada. Fontes,
+espaçamentos e quebras são iguais nas duas camadas; linhas longas usam rolagem
+horizontal. Uma linha em branco extra na camada visual permite acompanhar a
+rolagem até o fim sem acrescentar caracteres ao código digitado.
 
 ## Exemplos para a apresentação
 

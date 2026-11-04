@@ -59,11 +59,48 @@ textarea {
 textarea,
 pre {
   font: 14px/1.5 Consolas, monospace;
+  font-variant-ligatures: none;
   tab-size: 4;
 }
 
 textarea::placeholder {
   color: #a6a8ae;
+}
+
+/* A camada colorida fica atrás do campo; só o textarea recebe edição e foco. */
+.editor-codigo {
+  position: relative;
+}
+
+.editor-codigo .camada-destaque {
+  display: none;
+  position: absolute;
+  inset: 0;
+  max-height: none;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  overflow: hidden;
+  color: #eee;
+  white-space: pre;
+  pointer-events: none;
+}
+
+.editor-codigo.com-destaque .camada-destaque {
+  display: block;
+}
+
+.editor-codigo.com-destaque textarea {
+  position: relative;
+  background: transparent;
+  color: transparent;
+  caret-color: #eee;
+}
+
+.editor-codigo.com-destaque textarea::selection {
+  color: transparent;
+  background: rgb(90 140 220 / 35%);
 }
 
 .acoes {
@@ -153,7 +190,14 @@ pre code {
 
 .palavra-reservada {
   color: #ffd166;
-  font-weight: bold;
+}
+
+.numero {
+  color: #93c5fd;
+}
+
+.string {
+  color: #86efac;
 }
 
 .observacao {

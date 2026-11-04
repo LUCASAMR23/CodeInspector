@@ -7,6 +7,10 @@ const ambiente = require("node:vm");
 function criarNo(texto = "") {
   return {
     textContent: texto,
+    value: "",
+    scrollTop: 0,
+    scrollLeft: 0,
+    classList: { add() {} },
     filhos: [],
     ouvintes: {},
     append(...filhos) { this.filhos.push(...filhos); },
@@ -21,7 +25,7 @@ function lerTexto(no) {
 
 const elementos = {};
 for (const id of ["codigo", "botao-analisar", "painel-resultado", "resumo-resultado",
-  "lista-erros", "painel-destaque", "codigo-destacado", "codigo-analise"]) {
+  "lista-erros", "editor-codigo", "camada-destaque", "codigo-destacado", "codigo-analise"]) {
   elementos[id] = criarNo();
 }
 
@@ -85,19 +89,71 @@ verificar.equal(analisar(exemploImagem).erros.length, 1);
 verificar.match(analisar(exemploImagem).erros[0].mensagem, /linha 2, coluna 29/);
 verificar.ok(analisar(exemploImagem).erros[0].mensagem.includes("Esperado “]”"));
 
-// Clique e destaque: nomes inteiros, texto preservado e nenhum HTML interpretado.
+// O destaque aparece ao digitar, antes de clicar, sem alterar texto ou seleção.
 const codigoDestaque = 'const texto = "if <img src=x onerror=alert(1)>"; // return\nlet ifTotal = true;';
 elementos.codigo.value = codigoDestaque;
-elementos["botao-analisar"].ouvintes.click();
-verificar.equal(elementos["painel-resultado"].className, "resultado sucesso");
-verificar.equal(elementos["painel-destaque"].hidden, false);
-verificar.equal(lerTexto(elementos["codigo-destacado"]), codigoDestaque);
+elementos.codigo.selectionStart = 5;
+elementos.codigo.selectionEnd = 10;
+elementos.codigo.ouvintes.input();
+verificar.equal(elementos.codigo.value, codigoDestaque);
+verificar.equal(elementos.codigo.selectionStart, 5);
+verificar.equal(elementos.codigo.selectionEnd, 10);
+verificar.equal(elementos["resumo-resultado"].textContent, "Aguardando análise");
+verificar.equal(lerTexto(elementos["codigo-destacado"]), codigoDestaque + "\n ");
 
 const fragmento = elementos["codigo-destacado"].filhos[0];
 verificar.deepEqual(
   fragmento.filhos.filter(no => no.className === "palavra-reservada").map(no => no.textContent),
   ["const", "let", "true"]
 );
+
+// A palavra deixa de ser destacada quando passa a fazer parte de outro nome.
+elementos.codigo.value = "constante";
+elementos.codigo.ouvintes.input();
+verificar.equal(
+  elementos["codigo-destacado"].filhos[0].filhos.filter(no => no.className === "palavra-reservada").length,
+  0
+);
+
+// Números e strings têm cores próprias, sem destacar o conteúdo dos comentários.
+function trechosColoridos(codigo) {
+  elementos.codigo.value = codigo;
+  elementos.codigo.ouvintes.input();
+  verificar.equal(lerTexto(elementos["codigo-destacado"]), codigo + "\n ");
+  return elementos["codigo-destacado"].filhos[0].filhos
+    .filter(no => no.className)
+    .map(no => [no.className, no.textContent]);
+}
+
+verificar.deepEqual(
+  trechosColoridos('const item2 = [10, 3.14, .5, 2e-3, 0xFF, 0b10, 0o7, 1_000, 42n]; // 99 "texto"'),
+  [
+    ["palavra-reservada", "const"],
+    ["numero", "10"], ["numero", "3.14"], ["numero", ".5"], ["numero", "2e-3"],
+    ["numero", "0xFF"], ["numero", "0b10"], ["numero", "0o7"],
+    ["numero", "1_000"], ["numero", "42n"]
+  ]
+);
+
+verificar.deepEqual(
+  trechosColoridos('"if 123"; \'return 42\'; `texto 9`; /* 77 "ignorado" */'),
+  [["string", '"if 123"'], ["string", "'return 42'"], ["string", "`texto 9`"]]
+);
+verificar.deepEqual(
+  trechosColoridos(String.raw`"aspa: \" 123"`),
+  [["string", String.raw`"aspa: \" 123"`]]
+);
+verificar.deepEqual(trechosColoridos('"ainda digitando 123'), [["string", '"ainda digitando 123']]);
+
+elementos.codigo.scrollTop = 84;
+elementos.codigo.scrollLeft = 32;
+elementos.codigo.ouvintes.scroll();
+verificar.equal(elementos["camada-destaque"].scrollTop, 84);
+verificar.equal(elementos["camada-destaque"].scrollLeft, 32);
+
+elementos.codigo.value = codigoDestaque;
+elementos["botao-analisar"].ouvintes.click();
+verificar.equal(elementos["painel-resultado"].className, "resultado sucesso");
 
 elementos.codigo.value = exemploImagem;
 elementos["botao-analisar"].ouvintes.click();
@@ -107,7 +163,11 @@ verificar.equal(elementos["resumo-resultado"].textContent, "1 erro encontrado:")
 elementos.codigo.ouvintes.input();
 verificar.equal(elementos["resumo-resultado"].textContent, "Aguardando análise");
 verificar.equal(elementos["lista-erros"].filhos.length, 0);
-verificar.equal(elementos["painel-destaque"].hidden, true);
+verificar.equal(lerTexto(elementos["codigo-destacado"]), exemploImagem + "\n ");
+
+elementos.codigo.value = "const\n";
+elementos.codigo.ouvintes.input();
+verificar.equal(lerTexto(elementos["codigo-destacado"]), "const\n\n ");
 
 for (const vazio of ["", " \n\t "]) {
   elementos.codigo.value = vazio;
