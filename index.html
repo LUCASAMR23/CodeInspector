@@ -10,22 +10,37 @@
 </head>
 <body>
   <main>
+    <!-- 1. Apresentação e entrada do código -->
     <h1>Analisador Sintático</h1>
-    <p class="descricao">Este projeto verificará parênteses, colchetes e chaves em códigos JavaScript.</p>
+    <p class="descricao">Verifique parênteses, colchetes e chaves e destaque palavras reservadas de JavaScript.</p>
+
     <label for="codigo">Código JavaScript</label>
-    <textarea id="codigo" spellcheck="false" aria-describedby="ajuda-codigo" placeholder="Escreva ou cole seu código aqui"></textarea>
+    <textarea id="codigo" spellcheck="false" autocapitalize="off" autocomplete="off"
+      aria-describedby="ajuda-codigo" placeholder="Escreva ou cole seu código aqui"></textarea>
     <small id="ajuda-codigo">Strings e comentários são ignorados na verificação.</small>
+
     <div class="acoes">
       <button id="botao-analisar" type="button">Analisar código</button>
     </div>
+
+    <!-- 2. Resultado da análise e código com destaque -->
     <section id="painel-resultado" class="resultado neutro" aria-live="polite">
       <h2>Resultado</h2>
       <p id="resumo-resultado">Aguardando análise</p>
       <ul id="lista-erros" hidden></ul>
     </section>
+
+    <section id="painel-destaque" class="resultado" aria-labelledby="titulo-destaque" hidden>
+      <h2 id="titulo-destaque">Código com destaque</h2>
+      <pre tabindex="0" aria-labelledby="titulo-destaque"><code id="codigo-destacado"></code></pre>
+    </section>
+
+    <p class="observacao">A análise verifica delimitadores; não valida toda a sintaxe do JavaScript.</p>
+
+    <!-- 3. Apoio para a apresentação -->
     <details>
       <summary>Ver o código usado para encontrar os erros</summary>
-      <pre><code id="codigo-analise"></code></pre>
+      <pre tabindex="0" aria-label="Código do analisador"><code id="codigo-analise"></code></pre>
     </details>
   </main>
 </body>
