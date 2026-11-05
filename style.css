@@ -200,6 +200,14 @@ pre code {
   color: #86efac;
 }
 
+.booleano {
+  color: #c4b5fd;
+}
+
+.identificador {
+  color: #f9a8d4;
+}
+
 .observacao {
   margin-top: 20px;
   font-size: 0.85rem;

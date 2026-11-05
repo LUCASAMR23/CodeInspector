@@ -18,6 +18,17 @@ interface Analise {
   erros: Erro[];
 }
 
+interface StringIncompleta {
+  indice: number;
+  aspas: string;
+}
+
+interface NomesDefinidos {
+  nomes: Set<string>;
+  propriedades: Set<string>;
+  codigoLimpo: string;
+}
+
 // 2. Elementos da página
 function obterElemento<T extends HTMLElement>(id: string): T {
   const elemento = document.getElementById(id);
@@ -42,7 +53,7 @@ const codigoAnalise = obterElemento<HTMLElement>("codigo-analise");
 
 // 3. Pares de delimitadores e regras de destaque
 const pares: Record<string, string> = { "(": ")", "[": "]", "{": "}" };
-const padraoTextos = /\/\*[\s\S]*?(?:\*\/|$)|\/\/[^\r\n\u2028\u2029]*|"(?:\\[\s\S]|[^"\\])*"?|'(?:\\[\s\S]|[^'\\])*'?|`(?:\\[\s\S]|[^`\\])*`?/g;
+const padraoTextos = /\/\*[\s\S]*?(?:\*\/|$)|\/\/[^\r\n\u2028\u2029]*|"(?:\\(?:\r\n|[\s\S])|[^"\\\r\n\u2028\u2029])*"?|'(?:\\(?:\r\n|[\s\S])|[^'\\\r\n\u2028\u2029])*'?|`(?:\\[\s\S]|[^`\\])*`?/g;
 const padraoNumeros = /(?:0[xX][\da-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+)n?|\d[\d_]*n|(?:\d[\d_]*(?:\.[\d_]*)?|\.\d[\d_]*)(?:[eE][+-]?[\d_]+)?/;
 const padraoPalavras = /[\p{ID_Continue}$\u200c\u200d]+/u;
 // Textos vêm primeiro para não destacar números ou palavras dentro deles.
@@ -53,10 +64,10 @@ const padraoDestaques = new RegExp(
 const palavrasReservadas = new Set([
   "async", "await", "break", "case", "catch", "class", "const", "continue",
   "debugger", "default", "delete", "do", "else", "enum", "export", "extends",
-  "false", "finally", "for", "function", "if", "implements", "import", "in",
+  "finally", "for", "function", "if", "implements", "import", "in",
   "instanceof", "interface", "let", "new", "null", "package", "private",
   "protected", "public", "return", "static", "super", "switch", "this",
-  "throw", "true", "try", "typeof", "var", "void", "while", "with", "yield"
+  "throw", "try", "typeof", "var", "void", "while", "with", "yield"
 ]);
 
 
@@ -71,9 +82,35 @@ function formatarPosicao(posicao: Posicao): string {
   return `linha ${posicao.linha}, coluna ${posicao.coluna}`;
 }
 
+function stringEstaFechada(texto: string): boolean {
+  if (texto.length < 2 || !texto.endsWith(texto[0])) {
+    return false;
+  }
+
+  // Uma quantidade ímpar de barras antes da aspa faz dela parte do texto.
+  let barras = 0;
+  for (let indice = texto.length - 2; indice >= 0 && texto[indice] === "\\"; indice--) {
+    barras++;
+  }
+
+  return barras % 2 === 0;
+}
+
+function encontrarStringIncompleta(codigo: string): StringIncompleta | undefined {
+  for (const trecho of codigo.matchAll(padraoTextos)) {
+    const texto = trecho[0];
+    const aspas = texto[0];
+
+    if (['"', "'", "`"].includes(aspas) && !stringEstaFechada(texto)) {
+      return { indice: trecho.index, aspas };
+    }
+  }
+}
+
 
 // 5. Análise com pilha: independente dos elementos da página
 function analisarCodigo(codigo: string): Analise {
+  const stringIncompleta = encontrarStringIncompleta(codigo);
   const codigoLimpo = ignorarStringsEComentarios(codigo);
   const pilha: DelimitadorAberto[] = [];
   const erros: Erro[] = [];
@@ -93,6 +130,16 @@ function analisarCodigo(codigo: string): Analise {
       linha++;
       coluna = 0;
       continue;
+    }
+
+    if (stringIncompleta && indice === stringIncompleta.indice) {
+      erros.push({
+        mensagem: `String sem fechamento em ${formatarPosicao({ linha, coluna })}. `
+          + `Esperado “${stringIncompleta.aspas}”. Corrija a string para continuar a análise.`,
+        indice
+      });
+      // Os delimitadores seguintes podem pertencer ao texto da string incompleta.
+      return { erros };
     }
 
     if (pares[caractere]) {
@@ -138,8 +185,103 @@ function analisarCodigo(codigo: string): Analise {
 
 
 // 6. Destaque no próprio campo: texto digitado nunca é interpretado como HTML
+// shortcut: reconhecimento de declarações usuais; usar um parser se precisar resolver escopos completos.
+function encontrarNomesDefinidos(codigo: string): NomesDefinidos {
+  const codigoLimpo = ignorarStringsEComentarios(codigo);
+  const nomes = new Set<string>();
+  const propriedades = new Set<string>();
+  const nome = "[\\p{ID_Start}$_][\\p{ID_Continue}$\\u200c\\u200d]*";
+  const inicioNome = new RegExp(`^(?:\\.\\.\\.)?(${nome})`, "u");
+
+  function adicionarVinculos(texto: string): void {
+    const vinculos = texto.trim().replace(/^[{\[]|[}\]]$/g, "");
+
+    for (const parte of vinculos.split(",")) {
+      const vinculo = (parte.split("=")[0].split(":").pop() ?? "").trim();
+      const encontrado = vinculo.match(inicioNome);
+      if (encontrado && !palavrasReservadas.has(encontrado[1])) {
+        nomes.add(encontrado[1]);
+      }
+    }
+  }
+
+  for (const declaracao of codigoLimpo.matchAll(/\b(?:const|let|var)\s+([^;\r\n]+)/g)) {
+    let inicio = 0;
+    let fimNome = -1;
+    let nivel = 0;
+    const texto = declaracao[1];
+
+    // Vírgulas dentro de arrays, objetos ou chamadas não iniciam outra variável.
+    for (let indice = 0; indice <= texto.length; indice++) {
+      const caractere = texto[indice];
+      if (indice === texto.length || (caractere === "," && nivel === 0)) {
+        adicionarVinculos(texto.slice(inicio, fimNome < 0 ? indice : fimNome));
+        inicio = indice + 1;
+        fimNome = -1;
+      } else if (caractere === "=" && nivel === 0 && fimNome < 0) {
+        fimNome = indice;
+      } else if ("([{".includes(caractere)) {
+        nivel++;
+      } else if (")]}".includes(caractere)) {
+        nivel = Math.max(0, nivel - 1);
+      }
+    }
+  }
+
+  const declaracoes = new RegExp(`\\b(?:function\\b\\s*\\*?|class\\b)\\s*(${nome})`, "gu");
+  for (const declaracao of codigoLimpo.matchAll(declaracoes)) {
+    nomes.add(declaracao[1]);
+  }
+
+  const parametros = new RegExp(
+    `\\bfunction\\b\\s*\\*?\\s*(?:${nome})?\\s*\\(([^()]*)\\)`
+      + `|\\(([^()]*)\\)\\s*=>|(${nome})\\s*=>`, "gu"
+  );
+  for (const funcao of codigoLimpo.matchAll(parametros)) {
+    adicionarVinculos(funcao[1] ?? funcao[2] ?? funcao[3]);
+  }
+
+  const metodos = new RegExp(`(${nome})\\s*\\(([^()]*)\\)\\s*\\{`, "gu");
+  for (const metodo of codigoLimpo.matchAll(metodos)) {
+    if (!palavrasReservadas.has(metodo[1])) {
+      if (metodo[1] !== "constructor") {
+        nomes.add(metodo[1]);
+        propriedades.add(metodo[1]);
+      }
+      adicionarVinculos(metodo[2]);
+    }
+  }
+
+  const campos = new RegExp(`(?:[{,]\\s*(${nome})\\s*:)|(?:[{;]\\s*(${nome})\\s*=)`, "gu");
+  for (const campo of codigoLimpo.matchAll(campos)) {
+    propriedades.add(campo[1] ?? campo[2]);
+  }
+
+  return { nomes, propriedades, codigoLimpo };
+}
+
+function nomeFoiDefinido(texto: string, indice: number, definidos: NomesDefinidos): boolean {
+  const codigo = definidos.codigoLimpo;
+  let anterior = indice - 1;
+  while (anterior >= 0 && /\s/.test(codigo[anterior])) anterior--;
+
+  if (codigo[anterior] !== "." || codigo.slice(anterior - 2, anterior + 1) === "...") {
+    return definidos.nomes.has(texto) || definidos.propriedades.has(texto);
+  }
+
+  // Uma função local chamada log não muda a cor do método em console.log.
+  let fimDono = anterior - 1;
+  while (fimDono >= 0 && /[\s?]/.test(codigo[fimDono])) fimDono--;
+  let inicioDono = fimDono;
+  while (inicioDono >= 0 && padraoPalavras.test(codigo[inicioDono])) inicioDono--;
+  const dono = codigo.slice(inicioDono + 1, fimDono + 1);
+
+  return definidos.propriedades.has(texto) && (definidos.nomes.has(dono) || dono === "this");
+}
+
 function destacarCodigo(codigo: string): void {
   const fragmento = document.createDocumentFragment();
+  const definidos = encontrarNomesDefinidos(codigo);
   let inicio = 0;
 
   for (const trecho of codigo.matchAll(padraoDestaques)) {
@@ -147,11 +289,15 @@ function destacarCodigo(codigo: string): void {
     let classe = "";
 
     if (/^["'`]/.test(texto)) {
-      classe = "string";
+      classe = stringEstaFechada(texto) ? "string" : "";
     } else if (/^(?:\d|\.\d)/.test(texto)) {
       classe = "numero";
+    } else if (texto === "true" || texto === "false") {
+      classe = "booleano";
     } else if (palavrasReservadas.has(texto)) {
       classe = "palavra-reservada";
+    } else if (nomeFoiDefinido(texto, trecho.index, definidos)) {
+      classe = "identificador";
     }
 
     if (!classe) {
@@ -239,6 +385,6 @@ editorCodigo.classList.add("com-destaque");
 
 codigoAnalise.textContent = `const pares = ${JSON.stringify(pares, null, 2)};\n\n`
   + `const padraoTextos = ${padraoTextos};\n\n`
-  + [ignorarStringsEComentarios, formatarPosicao, analisarCodigo]
+  + [ignorarStringsEComentarios, formatarPosicao, stringEstaFechada, encontrarStringIncompleta, analisarCodigo]
     .map(funcao => funcao.toString())
     .join("\n\n");

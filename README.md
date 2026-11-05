@@ -9,8 +9,12 @@ Abra `index.html` no navegador, mantendo `script.js` e `style.css` na mesma past
 O JavaScript já está pronto: não é necessário compilar ou instalar dependências
 para usar a página no computador do professor.
 
-Palavras reservadas ficam amarelas, números azuis e strings verdes no próprio
-campo enquanto você digita ou cola. Strings incluem as aspas que as delimitam.
+Palavras reservadas ficam amarelas, números azuis, strings verdes e os booleanos
+`true` e `false` ficam roxos. Identificadores (nomes de variáveis, funções,
+parâmetros, classes e propriedades) ficam rosas no próprio campo
+enquanto você digita ou cola. Strings incluem as aspas que as delimitam.
+A string só recebe verde depois que as aspas são fechadas. Enquanto estiver
+incompleta, seu conteúdo fica na cor normal, sem outros destaques internos.
 O botão “Analisar código” verifica os delimitadores e apresenta os erros.
 
 `script.ts` é o fonte TypeScript desta versão. `script.js` é sua versão para o
@@ -78,14 +82,28 @@ com a análise. Assim, números e palavras dentro de strings mantêm a cor da st
 e o conteúdo dos comentários mantém a cor normal.
 
 `destacarCodigo()` escolhe uma classe CSS para cada trecho: `palavra-reservada`,
-`numero` ou `string`. O CSS define as três cores. Números incluem inteiros,
+`numero`, `string`, `booleano` ou `identificador`. O CSS define as cinco cores. Números incluem inteiros,
 decimais, notação científica e bases hexadecimal, binária e octal. Esse destaque
 não verifica se o literal numérico é válido em toda a gramática de JavaScript.
 
 O `Set` guarda a lista de palavras consultadas. As palavras são reconhecidas
 inteiras: `if` recebe cor, mas `ifTotal` não. Também destacamos `async`, palavras
-contextuais/futuras e os literais `true`, `false` e `null`; o destaque não é uma
+contextuais/futuras e o literal `null`. Os literais `true` e `false` têm uma cor
+própria para valores booleanos; o destaque não é uma
 análise do papel gramatical de cada palavra.
+
+`encontrarNomesDefinidos()` reconhece declarações usuais de variáveis, funções,
+classes, parâmetros e propriedades definidas no próprio código. Esses nomes e
+suas referências recebem a classe `identificador`. APIs prontas como `console.log`,
+`Math.max` e `document.querySelector` mantêm a cor normal.
+
+Os acessos após ponto são tratados separadamente. Uma função local chamada `log`
+não colore o método de `console.log`. Uma propriedade definida pelo usuário,
+como `pessoa.nome` após `const pessoa = {nome: "Ana"}`, recebe a cor rosa.
+
+Esse reconhecimento usa padrões simples, sem resolver escopos ou tipos. Sintaxes
+mais complexas, como declarações multilinha, desestruturações aninhadas, valores
+padrão com chamadas e cadeias de propriedades, podem não ser reconhecidas.
 
 O texto digitado é exibido com nós de texto e `textContent`, sem `innerHTML` ou
 `eval`. O conteúdo digitado nunca é executado.
@@ -135,8 +153,12 @@ delimitadores sobrando, mas não é uma instrução válida de JavaScript.
   ou aspas podem produzir resultados incorretos.
 - Crases são tratadas como texto inteiro. Expressões dentro de `${...}` não são
   analisadas. Templates aninhados também exigiriam uma leitura léxica mais completa.
-- A função de preparação pode ignorar strings/comentários incompletos até o fim
-  do texto; não é um validador desses trechos.
+- Strings com aspas simples ou duplas terminam na quebra de linha, exceto quando
+  a quebra é escapada com barra invertida. Crases permitem múltiplas linhas.
+- Uma string sem fechamento é apontada na posição da aspa de abertura. Nesse
+  ponto, a análise para sem listar aberturas pendentes, evitando avisos derivados
+  da string incompleta. O destaque nas linhas seguintes continua normalmente.
+- Comentários de bloco incompletos ainda podem ser ignorados até o fim do texto.
 - Colunas usam posições UTF-16, como os índices das strings JavaScript. Uma
   tabulação conta como uma posição e um emoji pode ocupar duas. Quebras LF,
   CRLF e CR são aceitas.

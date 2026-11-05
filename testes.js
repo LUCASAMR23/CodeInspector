@@ -104,7 +104,7 @@ verificar.equal(lerTexto(elementos["codigo-destacado"]), codigoDestaque + "\n ")
 const fragmento = elementos["codigo-destacado"].filhos[0];
 verificar.deepEqual(
   fragmento.filhos.filter(no => no.className === "palavra-reservada").map(no => no.textContent),
-  ["const", "let", "true"]
+  ["const", "let"]
 );
 
 // A palavra deixa de ser destacada quando passa a fazer parte de outro nome.
@@ -126,9 +126,63 @@ function trechosColoridos(codigo) {
 }
 
 verificar.deepEqual(
+  trechosColoridos('true false trueValue falseValue "true false" // true false'),
+  [
+    ["booleano", "true"], ["booleano", "false"],
+    ["string", '"true false"']
+  ]
+);
+
+verificar.deepEqual(
+  trechosColoridos('let total = 1; var ativo = true; const nome = "total"; total += 2; console.log(nome, ativo); // total')
+    .filter(([classe]) => classe === "identificador").map(([, texto]) => texto),
+  ["total", "ativo", "nome", "total", "nome", "ativo"]
+);
+verificar.deepEqual(
+  trechosColoridos('const /* comentário */ ação = 1; ação; const $saldo = 2; $saldo;')
+    .filter(([classe]) => classe === "identificador").map(([, texto]) => texto),
+  ["ação", "ação", "$saldo", "$saldo"]
+);
+
+// Funções, parâmetros, classes e propriedades recebem a mesma cor de identificador.
+verificar.deepEqual(
+  trechosColoridos('function somar(valor) { const {total} = valor; return total; } class Pessoa {} const a = 1, b = 2; somar(a); Pessoa.nome;')
+    .filter(([classe]) => classe === "identificador").map(([, texto]) => texto),
+  ["somar", "valor", "total", "valor", "total", "Pessoa", "a", "b", "somar", "a", "Pessoa"]
+);
+
+// APIs prontas não recebem rosa, mesmo quando há uma função local com nome igual.
+verificar.deepEqual(
+  trechosColoridos('function log(valor) { return valor; } log(1); console.log(2); Math.max(1, 2); document.querySelector("body");')
+    .filter(([classe]) => classe === "identificador").map(([, texto]) => texto),
+  ["log", "valor", "valor", "log"]
+);
+verificar.deepEqual(
+  trechosColoridos('const dobrar = valor => valor * 2; const somar = (a, b) => a + b; console.log(dobrar(3));')
+    .filter(([classe]) => classe === "identificador").map(([, texto]) => texto),
+  ["dobrar", "valor", "valor", "somar", "a", "b", "a", "b", "dobrar"]
+);
+verificar.deepEqual(
+  trechosColoridos('const pessoa = {nome: "Ana"}; pessoa.nome; console.nome; const numeros = [1]; numeros.length;')
+    .filter(([classe]) => classe === "identificador").map(([, texto]) => texto),
+  ["pessoa", "nome", "pessoa", "nome", "numeros", "numeros"]
+);
+verificar.deepEqual(
+  trechosColoridos('const objeto = { log(valor) { return valor; } }; objeto.log(1); console.log(2);')
+    .filter(([classe]) => classe === "identificador").map(([, texto]) => texto),
+  ["objeto", "log", "valor", "valor", "objeto", "log"]
+);
+verificar.deepEqual(
+  trechosColoridos('function juntar(...itens) { return itens; } juntar(1);')
+    .filter(([classe]) => classe === "identificador").map(([, texto]) => texto),
+  ["juntar", "itens", "itens", "juntar"]
+);
+
+verificar.deepEqual(
   trechosColoridos('const item2 = [10, 3.14, .5, 2e-3, 0xFF, 0b10, 0o7, 1_000, 42n]; // 99 "texto"'),
   [
     ["palavra-reservada", "const"],
+    ["identificador", "item2"],
     ["numero", "10"], ["numero", "3.14"], ["numero", ".5"], ["numero", "2e-3"],
     ["numero", "0xFF"], ["numero", "0b10"], ["numero", "0o7"],
     ["numero", "1_000"], ["numero", "42n"]
@@ -143,7 +197,33 @@ verificar.deepEqual(
   trechosColoridos(String.raw`"aspa: \" 123"`),
   [["string", String.raw`"aspa: \" 123"`]]
 );
-verificar.deepEqual(trechosColoridos('"ainda digitando 123'), [["string", '"ainda digitando 123']]);
+// O verde só aparece quando a aspa de fechamento é digitada; removê-la desfaz a cor.
+for (const aspas of ['"', "'", "`"]) {
+  const incompleta = aspas + "if 123";
+  verificar.deepEqual(trechosColoridos(incompleta), []);
+  verificar.deepEqual(trechosColoridos(incompleta + aspas), [["string", incompleta + aspas]]);
+  verificar.deepEqual(trechosColoridos(incompleta), []);
+}
+verificar.deepEqual(trechosColoridos(String.raw`"aspa: \"`), []);
+verificar.deepEqual(trechosColoridos('""; \'\'; ``'), [
+  ["string", '""'], ["string", "''"], ["string", "``"]
+]);
+
+// A aspa ausente da imagem não deve pintar as próximas linhas nem gerar erros em cascata.
+const exemploStringIncompleta = exemploImagem.replace("[1, 2, 3)", '["fdsf]');
+const errosDaString = analisar(exemploStringIncompleta).erros;
+verificar.equal(errosDaString.length, 1);
+verificar.match(errosDaString[0].mensagem, /String sem fechamento em linha 2, coluna 22/);
+
+const coresDaString = trechosColoridos(exemploStringIncompleta);
+verificar.deepEqual(coresDaString.filter(([classe]) => classe === "string"), []);
+verificar.ok(coresDaString.some(([classe, texto]) => classe === "palavra-reservada" && texto === "if"));
+verificar.equal(analisar(exemploStringIncompleta.replace('["fdsf]', '["fdsf"]')).erros.length, 0);
+
+for (const codigo of ['"', "'", "`", String.raw`"aspa: \"`, '"texto\n', "'texto\r\n"]) {
+  verificar.equal(analisar(codigo).erros.length, 1, codigo);
+  verificar.match(analisar(codigo).erros[0].mensagem, /String sem fechamento em linha 1, coluna 1/);
+}
 
 elementos.codigo.scrollTop = 84;
 elementos.codigo.scrollLeft = 32;
