@@ -1,28 +1,45 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Analisador Sintático de JavaScript</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Verificador simples de delimitadores JavaScript.">
+  <title>Analisador Sintático</title>
   <link rel="stylesheet" href="style.css">
   <script src="script.js" defer></script>
 </head>
 <body>
   <main>
-    <header>
-      <h1>Analisador Sintático</h1>
-      <p>Este projeto verificará parênteses, colchetes e chaves em códigos JavaScript.</p>
-    </header>
+    <!-- 1. Apresentação e entrada do código -->
+    <h1>Analisador Sintático</h1>
+    <p class="descricao">Verifique parênteses, colchetes e chaves e destaque palavras reservadas de JavaScript.</p>
 
     <label for="codigo">Código JavaScript</label>
-    <textarea id="codigo" name="codigo" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="Escreva ou cole seu código aqui"></textarea>
+    <div id="editor-codigo" class="editor-codigo">
+      <pre id="camada-destaque" class="camada-destaque" aria-hidden="true"><code id="codigo-destacado"></code></pre>
+      <textarea id="codigo" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off"
+        aria-describedby="ajuda-codigo" placeholder="Escreva ou cole seu código aqui"></textarea>
+    </div>
+    <small id="ajuda-codigo">Palavras reservadas, números e strings ganham cor ao digitar. Strings e comentários são ignorados na verificação.</small>
 
-    <button id="botao-analisar" type="button">Analisar código</button>
+    <div class="acoes">
+      <button id="botao-analisar" type="button">Analisar código</button>
+    </div>
 
-    <section class="painel-resultado" aria-labelledby="titulo-resultado">
-      <h2 id="titulo-resultado">Resultado da análise</h2>
-      <p id="resultado" role="status" aria-live="polite">Aguardando análise</p>
+    <!-- 2. Resultado da análise -->
+    <section id="painel-resultado" class="resultado neutro" aria-live="polite">
+      <h2>Resultado</h2>
+      <p id="resumo-resultado">Aguardando análise</p>
+      <ul id="lista-erros" hidden></ul>
     </section>
+
+    <p class="observacao">A análise verifica delimitadores; não valida toda a sintaxe do JavaScript.</p>
+
+    <!-- 3. Apoio para a apresentação -->
+    <details>
+      <summary>Ver o código usado para encontrar os erros</summary>
+      <pre tabindex="0" aria-label="Código do analisador"><code id="codigo-analise"></code></pre>
+    </details>
   </main>
 </body>
 </html>
