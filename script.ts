@@ -497,11 +497,74 @@ if (botaoCopiar) {
   });
 }
 
+let textoCodigoAlgoritmo = "";
+
+function renderizarAlgoritmoDestacado(codigoTexto: string): void {
+  const fragmento = document.createDocumentFragment();
+  const linhas = codigoTexto.split(/\r\n|\r|\n/);
+
+  for (let indice = 0; indice < linhas.length; indice++) {
+    const linhaTexto = linhas[indice];
+    const linhaEl = document.createElement("span");
+    linhaEl.className = "linha-codigo";
+
+    const numeroEl = document.createElement("span");
+    numeroEl.className = "numero-linha";
+    numeroEl.textContent = String(indice + 1);
+
+    const conteudoEl = document.createElement("span");
+    conteudoEl.className = "texto-linha";
+
+    let inicio = 0;
+    for (const trecho of linhaTexto.matchAll(padraoDestaques)) {
+      const texto = trecho[0];
+      let classe = "";
+
+      if (texto.startsWith("//") || texto.startsWith("/*")) {
+        classe = "comentario";
+      } else if (/^["'`]/.test(texto)) {
+        classe = stringEstaFechada(texto) ? "string" : "";
+      } else if (/^(?:\d|\.\d)/.test(texto)) {
+        classe = "numero";
+      } else if (texto === "true" || texto === "false" || texto === "null") {
+        classe = "booleano";
+      } else if (palavrasReservadas.has(texto)) {
+        classe = "palavra-reservada";
+      } else if (/^[a-zA-Z_$]/.test(texto)) {
+        classe = "identificador";
+      }
+
+      if (classe) {
+        if (trecho.index !== undefined && trecho.index > inicio) {
+          conteudoEl.append(document.createTextNode(linhaTexto.slice(inicio, trecho.index)));
+        }
+        const span = document.createElement("span");
+        span.className = classe;
+        span.textContent = texto;
+        conteudoEl.append(span);
+        inicio = (trecho.index ?? 0) + texto.length;
+      }
+    }
+
+    if (inicio < linhaTexto.length) {
+      conteudoEl.append(document.createTextNode(linhaTexto.slice(inicio)));
+    } else if (linhaTexto.length === 0) {
+      conteudoEl.append(document.createTextNode(" "));
+    }
+
+    linhaEl.append(numeroEl, conteudoEl);
+    fragmento.append(linhaEl);
+  }
+
+  codigoAnalise.replaceChildren(fragmento);
+}
+
 if (botaoCopiarAlgoritmo) {
   botaoCopiarAlgoritmo.addEventListener("click", async () => {
-    if (!codigoAnalise.textContent) return;
+    const textoParaCopiar = textoCodigoAlgoritmo || codigoAnalise.textContent;
+    if (!textoParaCopiar) return;
     try {
-      await navigator.clipboard.writeText(codigoAnalise.textContent);
+      await navigator.clipboard.writeText(textoParaCopiar);
       const original = botaoCopiarAlgoritmo.innerHTML;
       botaoCopiarAlgoritmo.textContent = "Copiado!";
       setTimeout(() => { botaoCopiarAlgoritmo.innerHTML = original; }, 1800);
@@ -512,8 +575,37 @@ if (botaoCopiarAlgoritmo) {
 atualizarEditor();
 editorCodigo.classList.add("com-destaque");
 
-codigoAnalise.textContent = `const pares = ${JSON.stringify(pares, null, 2)};\n\n`
-  + `const padraoTextos = ${padraoTextos};\n\n`
-  + [ignorarStringsEComentarios, formatarPosicao, criarIndicadorErro, stringEstaFechada, encontrarStringIncompleta, analisarCodigo]
-    .map(funcao => funcao.toString())
-    .join("\n\n");
+textoCodigoAlgoritmo = `// ============================================================================
+// 1. MAPEAMENTO DE DELIMITADORES & REGEX DE TRATAMENTO LÉXICO
+// ============================================================================
+const pares = ${JSON.stringify(pares, null, 2)};
+
+// Expressão regular compilada para mascarar strings e comentários.
+// Preserva espaços e quebras para que as posições (linha, coluna) originais fiquem intactas.
+const padraoTextos = ${padraoTextos};
+
+// ============================================================================
+// 2. FUNÇÕES AUXILIARES DE POSIÇÃO E ERROS
+// ============================================================================
+${ignorarStringsEComentarios.toString()}
+
+${formatarPosicao.toString()}
+
+${criarIndicadorErro.toString()}
+
+// ============================================================================
+// 3. TRATAMENTO DE STRINGS INCOMPLETAS (EVITA ERRO EM CASCATA)
+// ============================================================================
+${stringEstaFechada.toString()}
+
+${encontrarStringIncompleta.toString()}
+
+// ============================================================================
+// 4. ANÁLISE SINTÁTICA COM ESTRUTURA DE DADOS PILHA (LIFO)
+// Complexidade de Tempo: O(n) • Varredura linear em única passagem
+// Complexidade de Espaço: O(n) no pior caso
+// ============================================================================
+${analisarCodigo.toString()}`;
+
+codigoAnalise.textContent = textoCodigoAlgoritmo;
+renderizarAlgoritmoDestacado(textoCodigoAlgoritmo);
