@@ -56,6 +56,12 @@
 /* 2. Reset e Estrutura Global */
 *, *::before, *::after {
   box-sizing: border-box;
+  min-width: 0;
+}
+
+html {
+  overflow-x: hidden;
+  width: 100%;
 }
 
 body {
@@ -66,6 +72,8 @@ body {
   font-family: var(--font-ui);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 .sr-only {
@@ -84,27 +92,32 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .main-content {
   width: 100%;
-  max-width: 1440px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 0 32px 60px;
+  padding: 0 28px 60px;
   flex: 1;
+  min-width: 0;
 }
 
 /* 3. Cabeçalho Principal */
 .app-header {
   border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-card);
-  padding: 24px 32px;
+  padding: 22px 28px;
   margin-bottom: 24px;
+  width: 100%;
 }
 
 .header-content {
-  max-width: 1440px;
+  max-width: 1600px;
   margin: 0 auto;
+  min-width: 0;
 }
 
 .brand {
@@ -375,17 +388,20 @@ kbd {
   grid-template-columns: 1.15fr 0.85fr;
   gap: 24px;
   align-items: stretch;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  min-width: 0;
 }
 
 .workspace-col-editor {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .workspace-col-resultado {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .workspace-col-resultado .resultado {
@@ -402,30 +418,51 @@ kbd {
   padding-right: 6px;
 }
 
-/* Painel Inferior de Conhecimento (2 Colunas no Desktop) */
-.conhecimento-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
+/* Estado de Espera (Placeholder) do Painel de Resultado */
+.resultado-placeholder {
+  flex: 1;
   margin-top: 24px;
-  align-items: stretch;
-}
-
-.conhecimento-grid .secao-dedicada {
-  margin-top: 0;
+  padding: 32px 20px;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.015);
 }
 
-.conhecimento-grid .visualizador-codigo {
-  flex: 1;
+.resultado:not(.neutro) .resultado-placeholder {
+  display: none;
+}
+
+.placeholder-icone {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(56, 139, 253, 0.12);
+  color: var(--accent-blue);
+  border: 1px solid rgba(56, 139, 253, 0.25);
+  margin-bottom: 14px;
 }
 
-.conhecimento-grid .bloco-codigo-aberto {
-  flex: 1;
-  max-height: 580px;
+.placeholder-titulo {
+  margin: 0 0 6px !important;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main) !important;
+}
+
+.placeholder-texto {
+  margin: 0 !important;
+  font-size: 0.84rem;
+  color: var(--text-muted) !important;
+  max-width: 320px;
+  line-height: 1.5;
 }
 
 /* 8. Botão Principal */
@@ -580,12 +617,15 @@ kbd {
 
 /* 10. Seções Dedicadas: Algoritmo e Teoria */
 .secao-dedicada {
-  margin-top: 40px;
+  margin-top: 32px;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 24px 28px;
   box-shadow: var(--shadow-sm);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .secao-cabecalho {
@@ -636,6 +676,8 @@ kbd {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   overflow: hidden;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .visualizador-barra-topo {
@@ -647,6 +689,8 @@ kbd {
   padding: 8px 14px;
   font-family: var(--font-code);
   font-size: 0.78rem;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .arquivo-nome {
@@ -664,10 +708,13 @@ kbd {
 }
 
 .bloco-codigo-aberto {
-  max-height: 480px;
+  max-height: 440px;
+  max-width: 100%;
+  min-width: 0;
   margin: 0;
-  padding: 16px;
-  overflow: auto;
+  padding: 18px 20px;
+  overflow-x: auto;
+  overflow-y: auto;
   background: transparent;
   border: 0;
   border-radius: 0;
@@ -675,21 +722,31 @@ kbd {
   font-family: var(--font-code);
   font-size: 13px;
   line-height: 1.6;
+  white-space: pre;
 }
 
-/* Grid Teórico Expandido */
+.bloco-codigo-aberto code {
+  font-family: inherit;
+  white-space: inherit;
+}
+
+/* Grid Teórico Expandido (4 Cards no Desktop) */
 .teoria-grid-expandida {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  min-width: 0;
 }
 
 .card-teoria-destaque {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  padding: 18px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   transition: var(--transicao);
 }
 
@@ -744,13 +801,14 @@ kbd {
 /* Tabela de Casos de Teste */
 .casos-teste-container {
   border-top: 1px solid var(--border-subtle);
-  padding-top: 20px;
-  margin-top: 8px;
+  padding-top: 24px;
+  margin-top: 12px;
+  min-width: 0;
 }
 
 .subtitulo-casos {
-  margin: 0 0 14px;
-  font-size: 0.95rem;
+  margin: 0 0 16px;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-main);
 }
@@ -759,12 +817,17 @@ kbd {
   overflow-x: auto;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  background: var(--bg-surface);
 }
 
 .tabela-casos {
   width: 100%;
+  min-width: 720px;
   border-collapse: collapse;
-  font-size: 0.84rem;
+  font-size: 0.88rem;
   text-align: left;
   background: var(--bg-surface);
 }
@@ -772,19 +835,37 @@ kbd {
 .tabela-casos th {
   background: var(--bg-card);
   color: var(--text-muted);
-  padding: 10px 14px;
+  padding: 12px 18px;
   font-weight: 600;
   border-bottom: 1px solid var(--border-subtle);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .tabela-casos td {
-  padding: 12px 14px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--border-subtle);
   color: var(--text-muted);
   vertical-align: middle;
+}
+
+.tabela-casos th:first-child,
+.tabela-casos td:first-child {
+  width: 32%;
+  white-space: nowrap;
+}
+
+.tabela-casos th:nth-child(2),
+.tabela-casos td:nth-child(2) {
+  width: 48%;
+}
+
+.tabela-casos th:last-child,
+.tabela-casos td:last-child {
+  width: 20%;
+  white-space: nowrap;
 }
 
 .tabela-casos tr:last-child td {
@@ -798,11 +879,12 @@ kbd {
 .tabela-casos code {
   color: var(--text-main);
   background: var(--bg-editor);
-  padding: 2px 6px;
+  padding: 3px 8px;
   border-radius: 4px;
   font-family: var(--font-code);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   border: 1px solid var(--border-subtle);
+  display: inline-block;
 }
 
 .badge-status {
@@ -846,7 +928,7 @@ pre:focus-visible {
 }
 
 /* 13. Responsividade */
-@media (max-width: 1080px) {
+@media (max-width: 1120px) {
   .workspace-grid {
     grid-template-columns: 1fr;
   }
@@ -855,8 +937,8 @@ pre:focus-visible {
     min-height: auto;
   }
 
-  .conhecimento-grid {
-    grid-template-columns: 1fr;
+  .teoria-grid-expandida {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -891,5 +973,13 @@ pre:focus-visible {
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
+  }
+
+  .teoria-grid-expandida {
+    grid-template-columns: 1fr;
+  }
+
+  .secao-dedicada {
+    padding: 18px 16px;
   }
 }
