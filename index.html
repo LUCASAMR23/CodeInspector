@@ -33,213 +33,222 @@
         </div>
       </section>
 
-      <!-- Janela do Editor de Código (IDE Frame) -->
-      <section class="editor-card">
-        <div class="editor-header">
-          <div class="janela-controles" aria-hidden="true">
-            <span class="ponto-janela fechar"></span>
-            <span class="ponto-janela minimizar"></span>
-            <span class="ponto-janela expandir"></span>
-            <span class="arquivo-aba">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
+      <!-- Painel de Trabalho: Grid em 2 Colunas no Desktop -->
+      <div class="workspace-grid">
+        <div class="workspace-col-editor">
+          <!-- Janela do Editor de Código (IDE Frame) -->
+          <section class="editor-card">
+            <div class="editor-header">
+              <div class="janela-controles" aria-hidden="true">
+                <span class="ponto-janela fechar"></span>
+                <span class="ponto-janela minimizar"></span>
+                <span class="ponto-janela expandir"></span>
+                <span class="arquivo-aba">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                  </svg>
+                  codigo.js
+                </span>
+              </div>
+
+              <div class="editor-acoes-rapidas">
+                <button id="botao-exemplo-sucesso" type="button" class="btn-subtle" title="Carregar exemplo de código sem erros">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  Exemplo Válido
+                </button>
+                <button id="botao-exemplo-erro" type="button" class="btn-subtle" title="Carregar exemplo com erros de delimitadores e strings">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  Exemplo c/ Erro
+                </button>
+                <button id="botao-copiar" type="button" class="btn-subtle" title="Copiar código para a área de transferência">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  Copiar
+                </button>
+                <button id="botao-limpar" type="button" class="btn-subtle" title="Limpar editor">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  Limpar
+                </button>
+              </div>
+            </div>
+
+            <label for="codigo" class="sr-only">Código JavaScript para análise</label>
+            <div id="editor-codigo" class="editor-codigo">
+              <pre id="camada-destaque" class="camada-destaque" aria-hidden="true"><code id="codigo-destacado"></code></pre>
+              <textarea id="codigo" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off"
+                aria-describedby="ajuda-codigo" placeholder="// Escreva ou cole seu código JavaScript aqui...&#10;function exemplo() {&#10;  return [1, 2, 3];&#10;}"></textarea>
+            </div>
+
+            <div class="editor-statusbar">
+              <div class="status-left">
+                <span id="contador-linhas">1 linha</span>
+                <span class="divisor">•</span>
+                <span id="contador-caracteres">0 caracteres</span>
+              </div>
+              <div class="status-right">
+                <span class="atalho-dica">Atalho: <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
+                <span class="divisor">•</span>
+                <span>JavaScript (UTF-16)</span>
+              </div>
+            </div>
+          </section>
+
+          <small id="ajuda-codigo" class="texto-ajuda">
+            Delimitadores analisados: <code>( )</code>, <code>[ ]</code>, <code>{ }</code> e strings <code>" "</code>, <code>' '</code>, <code>` `</code>. Comentários e strings fechadas são ignorados na checagem da pilha.
+          </small>
+
+          <div class="acoes-principais">
+            <button id="botao-analisar" type="button" class="btn-primario">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
               </svg>
-              codigo.js
-            </span>
-          </div>
-
-          <div class="editor-acoes-rapidas">
-            <button id="botao-exemplo-sucesso" type="button" class="btn-subtle" title="Carregar exemplo de código sem erros">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              Exemplo Válido
-            </button>
-            <button id="botao-exemplo-erro" type="button" class="btn-subtle" title="Carregar exemplo com erros de delimitadores e strings">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-              Exemplo c/ Erro
-            </button>
-            <button id="botao-copiar" type="button" class="btn-subtle" title="Copiar código para a área de transferência">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              Copiar
-            </button>
-            <button id="botao-limpar" type="button" class="btn-subtle" title="Limpar editor">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-              Limpar
+              Analisar código
             </button>
           </div>
         </div>
 
-        <label for="codigo" class="sr-only">Código JavaScript para análise</label>
-        <div id="editor-codigo" class="editor-codigo">
-          <pre id="camada-destaque" class="camada-destaque" aria-hidden="true"><code id="codigo-destacado"></code></pre>
-          <textarea id="codigo" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off"
-            aria-describedby="ajuda-codigo" placeholder="// Escreva ou cole seu código JavaScript aqui...&#10;function exemplo() {&#10;  return [1, 2, 3];&#10;}"></textarea>
+        <div class="workspace-col-resultado">
+          <!-- Painel de Resultados -->
+          <section id="painel-resultado" class="resultado neutro" aria-live="polite">
+            <div class="resultado-cabecalho">
+              <div class="status-icone" aria-hidden="true"></div>
+              <div>
+                <h2>Diagnóstico da Análise</h2>
+                <p id="resumo-resultado">Aguardando análise</p>
+              </div>
+            </div>
+            <ul id="lista-erros" class="lista-erros" hidden></ul>
+          </section>
         </div>
-
-        <div class="editor-statusbar">
-          <div class="status-left">
-            <span id="contador-linhas">1 linha</span>
-            <span class="divisor">•</span>
-            <span id="contador-caracteres">0 caracteres</span>
-          </div>
-          <div class="status-right">
-            <span class="atalho-dica">Atalho: <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
-            <span class="divisor">•</span>
-            <span>JavaScript (UTF-16)</span>
-          </div>
-        </div>
-      </section>
-
-      <small id="ajuda-codigo" class="texto-ajuda">
-        Delimitadores analisados: <code>( )</code>, <code>[ ]</code>, <code>{ }</code> e strings <code>" "</code>, <code>' '</code>, <code>` `</code>. Comentários e strings fechadas são ignorados na checagem da pilha.
-      </small>
-
-      <!-- Barra de Ações Principais -->
-      <div class="acoes-principais">
-        <button id="botao-analisar" type="button" class="btn-primario">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-          </svg>
-          Analisar código
-        </button>
       </div>
 
-      <!-- Painel de Resultados -->
-      <section id="painel-resultado" class="resultado neutro" aria-live="polite">
-        <div class="resultado-cabecalho">
-          <div class="status-icone" aria-hidden="true"></div>
-          <div>
-            <h2>Diagnóstico da Análise</h2>
-            <p id="resumo-resultado">Aguardando análise</p>
-          </div>
-        </div>
-        <ul id="lista-erros" class="lista-erros" hidden></ul>
-      </section>
-
-      <!-- ÁREA DEDICADA 1: Código do Algoritmo com Pilha -->
-      <section class="secao-dedicada" id="secao-algoritmo">
-        <div class="secao-cabecalho">
-          <div class="secao-titulo-row">
-            <div class="secao-icone">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="16 18 22 12 16 6"></polyline>
-                <polyline points="8 6 2 12 8 18"></polyline>
-              </svg>
+      <!-- Painel Inferior de Conhecimento: Algoritmo e Teoria Lado a Lado -->
+      <div class="conhecimento-grid">
+        <!-- ÁREA DEDICADA 1: Código do Algoritmo com Pilha -->
+        <section class="secao-dedicada" id="secao-algoritmo">
+          <div class="secao-cabecalho">
+            <div class="secao-titulo-row">
+              <div class="secao-icone">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="16 18 22 12 16 6"></polyline>
+                  <polyline points="8 6 2 12 8 18"></polyline>
+                </svg>
+              </div>
+              <div>
+                <h2>Código do Algoritmo com Pilha</h2>
+                <p class="secao-descricao">Implementação em JavaScript do analisador sintático de delimitadores e cálculo de posições em $O(n)$.</p>
+              </div>
             </div>
-            <div>
-              <h2>Código do Algoritmo com Pilha</h2>
-              <p class="secao-descricao">Implementação em JavaScript do analisador sintático de delimitadores e cálculo de posições em $O(n)$.</p>
-            </div>
-          </div>
-          <button id="botao-copiar-algoritmo" type="button" class="btn-subtle" title="Copiar código do algoritmo">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            Copiar Algoritmo
-          </button>
-        </div>
-
-        <div class="visualizador-codigo">
-          <div class="visualizador-barra-topo">
-            <span class="arquivo-nome">analisador-sintatico.js</span>
-            <span class="badge-tag">Regra LIFO • Array Stack</span>
-          </div>
-          <pre tabindex="0" class="bloco-codigo-aberto" aria-label="Código do analisador"><code id="codigo-analise"></code></pre>
-        </div>
-      </section>
-
-      <!-- ÁREA DEDICADA 2: Fundamentos Teóricos da Pilha -->
-      <section class="secao-dedicada" id="secao-teoria">
-        <div class="secao-cabecalho">
-          <div class="secao-titulo-row">
-            <div class="secao-icone">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-              </svg>
-            </div>
-            <div>
-              <h2>Fundamentos Teóricos: Estrutura de Dados Pilha (LIFO)</h2>
-              <p class="secao-descricao">Conceitos acadêmicos que sustentam a validação sintática e o aninhamento de delimitadores.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="teoria-grid-expandida">
-          <div class="card-teoria-destaque">
-            <div class="teoria-card-header">
-              <span class="numero-passo">01</span>
-              <h3>Regra LIFO (Last-In, First-Out)</h3>
-            </div>
-            <p>O último delimitador aberto deve ser obrigatoriamente o primeiro a fechar. Cada abertura empilha um registro com seu símbolo, linha e coluna: <code>{ simbolo, indice, linha, coluna }</code>. Ao encontrar um fechamento, o topo da pilha é desempilhado e comparado.</p>
+            <button id="botao-copiar-algoritmo" type="button" class="btn-subtle" title="Copiar código do algoritmo">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Copiar Algoritmo
+            </button>
           </div>
 
-          <div class="card-teoria-destaque">
-            <div class="teoria-card-header">
-              <span class="numero-passo">02</span>
-              <h3>Por que Pilha e não Fila ou Contador?</h3>
+          <div class="visualizador-codigo">
+            <div class="visualizador-barra-topo">
+              <span class="arquivo-nome">analisador-sintatico.js</span>
+              <span class="badge-tag">Regra LIFO • Array Stack</span>
             </div>
-            <p>Contadores falham em casos clássicos como <code>([)]</code> — nele, a quantidade de aberturas e fechamentos bate perfeitamente, mas a ordem de aninhamento está invertida. Uma fila atenderia em FIFO (primeiro a entrar, primeiro a sair), violando o aninhamento. Só a Pilha garante a ordem correta.</p>
+            <pre tabindex="0" class="bloco-codigo-aberto" aria-label="Código do analisador"><code id="codigo-analise"></code></pre>
+          </div>
+        </section>
+
+        <!-- ÁREA DEDICADA 2: Fundamentos Teóricos da Pilha -->
+        <section class="secao-dedicada" id="secao-teoria">
+          <div class="secao-cabecalho">
+            <div class="secao-titulo-row">
+              <div class="secao-icone">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+              </div>
+              <div>
+                <h2>Fundamentos Teóricos: Pilha (LIFO)</h2>
+                <p class="secao-descricao">Conceitos acadêmicos aplicados ao aninhamento e à validação de delimitadores.</p>
+              </div>
+            </div>
           </div>
 
-          <div class="card-teoria-destaque">
-            <div class="teoria-card-header">
-              <span class="numero-passo">03</span>
-              <h3>Complexidade Algorítmica</h3>
+          <div class="teoria-grid-expandida">
+            <div class="card-teoria-destaque">
+              <div class="teoria-card-header">
+                <span class="numero-passo">01</span>
+                <h3>Regra LIFO (Last-In, First-Out)</h3>
+              </div>
+              <p>O último delimitador aberto deve ser obrigatoriamente o primeiro a fechar. Cada abertura empilha um registro <code>{ simbolo, indice, linha, coluna }</code>. Ao fechar, o topo da pilha é desempilhado e comparado.</p>
             </div>
-            <p>A varredura completa do texto é realizada em <strong>tempo linear $O(n)$</strong> em uma única passagem. O consumo de espaço na memória é <strong>$O(n)$ no pior caso</strong> (código composto apenas por aberturas) e a ordenação final da lista de erros é <strong>$O(e \log e)$</strong>.</p>
+
+            <div class="card-teoria-destaque">
+              <div class="teoria-card-header">
+                <span class="numero-passo">02</span>
+                <h3>Por que não Fila ou Contador?</h3>
+              </div>
+              <p>Contadores falham em casos como <code>([)]</code> — a contagem bate, mas o aninhamento está invertido. Uma fila atende em FIFO, violando a hierarquia. Só a Pilha detecta aninhamento incorreto.</p>
+            </div>
+
+            <div class="card-teoria-destaque">
+              <div class="teoria-card-header">
+                <span class="numero-passo">03</span>
+                <h3>Complexidade Algorítmica</h3>
+              </div>
+              <p>Varredura linear em <strong>tempo $O(n)$</strong> em uma única passagem. O consumo de espaço é <strong>$O(n)$ no pior caso</strong> e a ordenação final da lista de erros é <strong>$O(e \log e)$</strong>.</p>
+            </div>
+
+            <div class="card-teoria-destaque">
+              <div class="teoria-card-header">
+                <span class="numero-passo">04</span>
+                <h3>Tratamento Léxico</h3>
+              </div>
+              <p>Delimitadores dentro de comentários ou strings fechadas são mascarados. Se uma string estiver aberta sem fechamento, o analisador acusa o erro na aspa e para, evitando erros em cascata.</p>
+            </div>
           </div>
 
-          <div class="card-teoria-destaque">
-            <div class="teoria-card-header">
-              <span class="numero-passo">04</span>
-              <h3>Tratamento Léxico Sem Falsos Positivos</h3>
+          <!-- Tabela de Casos Canônicos para a Apresentação -->
+          <div class="casos-teste-container">
+            <h3 class="subtitulo-casos">Casos Canônicos para Apresentação</h3>
+            <div class="tabela-responsiva">
+              <table class="tabela-casos">
+                <thead>
+                  <tr>
+                    <th>Código de Teste</th>
+                    <th>Comportamento da Pilha</th>
+                    <th>Resultado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>function f() { return [1]; }</code></td>
+                    <td>Pares <code>( )</code>, <code>{ }</code>, <code>[ ]</code> desempilhados com sucesso.</td>
+                    <td><span class="badge-status sucesso">Válido</span> Sem erros</td>
+                  </tr>
+                  <tr>
+                    <td><code>([)]</code></td>
+                    <td>Ao ler <code>)</code>, o topo da pilha era <code>[</code> (incompatível).</td>
+                    <td><span class="badge-status erro">Erro</span> Incompatível</td>
+                  </tr>
+                  <tr>
+                    <td><code>const lista = [</code></td>
+                    <td>Ao atingir o fim do texto, <code>[</code> restou na pilha.</td>
+                    <td><span class="badge-status erro">Erro</span> Não fechado</td>
+                  </tr>
+                  <tr>
+                    <td><code>]</code></td>
+                    <td>Ao ler <code>]</code>, a pilha já estava vazia.</td>
+                    <td><span class="badge-status erro">Erro</span> Sem abertura</td>
+                  </tr>
+                  <tr>
+                    <td><code>const texto = "([{";</code></td>
+                    <td>Delimitadores dentro de strings são ignorados.</td>
+                    <td><span class="badge-status sucesso">Válido</span> Ignorado</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            <p>Caracteres de delimitadores presentes dentro de comentários (<code>//</code> ou <code>/* */</code>) ou dentro de strings fechadas são mascarados antes da análise. Se uma string estiver aberta sem fechamento, o analisador acusa o erro na aspa e interrompe para evitar erros derivados em cascata.</p>
           </div>
-        </div>
-
-        <!-- Tabela de Casos Canônicos para a Apresentação -->
-        <div class="casos-teste-container">
-          <h3 class="subtitulo-casos">Exemplos Canônicos para a Apresentação</h3>
-          <div class="tabela-responsiva">
-            <table class="tabela-casos">
-              <thead>
-                <tr>
-                  <th>Código de Teste</th>
-                  <th>Comportamento da Pilha</th>
-                  <th>Resultado do Analisador</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><code>function f() { return [1]; }</code></td>
-                  <td>Todos os <code>(</code>, <code>{</code>, <code>[</code> são desempilhados pelos seus pares.</td>
-                  <td><span class="badge-status sucesso">Válido</span> Nenhum erro encontrado</td>
-                </tr>
-                <tr>
-                  <td><code>([)]</code></td>
-                  <td>Ao ler <code>)</code>, o topo da pilha era <code>[</code> (incompatível).</td>
-                  <td><span class="badge-status erro">Erro</span> Incompatibilidade nas colunas 3 e 4</td>
-                </tr>
-                <tr>
-                  <td><code>const lista = [</code></td>
-                  <td>Ao atingir o fim do texto, <code>[</code> ainda permanece na pilha.</td>
-                  <td><span class="badge-status erro">Erro</span> Abertura sem fechamento na linha 1</td>
-                </tr>
-                <tr>
-                  <td><code>]</code></td>
-                  <td>Ao ler <code>]</code>, a pilha já estava vazia.</td>
-                  <td><span class="badge-status erro">Erro</span> Fechamento sem abertura na linha 1</td>
-                </tr>
-                <tr>
-                  <td><code>const texto = "([{"; // })]</code></td>
-                  <td>Delimitadores em strings e comentários são mascarados.</td>
-                  <td><span class="badge-status sucesso">Válido</span> Delimitadores são ignorados</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       <footer class="app-footer">
         <p>CodeInspector — Trabalho Prático de Estrutura de Dados (Pilha LIFO) • Execução 100% Offline</p>

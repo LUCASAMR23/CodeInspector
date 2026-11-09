@@ -88,9 +88,9 @@ body {
 
 .main-content {
   width: 100%;
-  max-width: 860px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 0 20px 60px;
+  padding: 0 32px 60px;
   flex: 1;
 }
 
@@ -98,12 +98,12 @@ body {
 .app-header {
   border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-card);
-  padding: 24px 20px;
+  padding: 24px 32px;
   margin-bottom: 24px;
 }
 
 .header-content {
-  max-width: 860px;
+  max-width: 1440px;
   margin: 0 auto;
 }
 
@@ -264,7 +264,7 @@ h1 {
 /* 6. Editor e Camada de Destaque */
 .editor-codigo {
   position: relative;
-  min-height: 280px;
+  min-height: 380px;
 }
 
 textarea,
@@ -279,7 +279,7 @@ pre {
 textarea {
   display: block;
   width: 100%;
-  min-height: 280px;
+  min-height: 380px;
   padding: 16px;
   border: 0;
   outline: none;
@@ -369,9 +369,68 @@ kbd {
   font-size: 0.8rem;
 }
 
-/* 7. Botão Principal */
+/* 7. Workspace em 2 Colunas no Desktop */
+.workspace-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 24px;
+  align-items: stretch;
+  margin-bottom: 24px;
+}
+
+.workspace-col-editor {
+  display: flex;
+  flex-direction: column;
+}
+
+.workspace-col-resultado {
+  display: flex;
+  flex-direction: column;
+}
+
+.workspace-col-resultado .resultado {
+  height: 100%;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+
+.workspace-col-resultado .lista-erros {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 480px;
+  padding-right: 6px;
+}
+
+/* Painel Inferior de Conhecimento (2 Colunas no Desktop) */
+.conhecimento-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
+  align-items: stretch;
+}
+
+.conhecimento-grid .secao-dedicada {
+  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.conhecimento-grid .visualizador-codigo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.conhecimento-grid .bloco-codigo-aberto {
+  flex: 1;
+  max-height: 580px;
+}
+
+/* 8. Botão Principal */
 .acoes-principais {
-  margin: 20px 0 24px;
+  margin: 16px 0 0;
 }
 
 .btn-primario {
@@ -787,6 +846,20 @@ pre:focus-visible {
 }
 
 /* 13. Responsividade */
+@media (max-width: 1080px) {
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace-col-resultado .resultado {
+    min-height: auto;
+  }
+
+  .conhecimento-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 640px) {
   .app-header {
     padding: 18px 16px;
