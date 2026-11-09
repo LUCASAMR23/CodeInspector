@@ -116,43 +116,133 @@
         <ul id="lista-erros" class="lista-erros" hidden></ul>
       </section>
 
-      <!-- Seção Acadêmica e Código-fonte de Apoio -->
-      <section class="secao-academica">
-        <details class="card-expansivel">
-          <summary>
-            <span class="icone-chevron" aria-hidden="true">›</span>
-            <span>Ver o código do algoritmo com Pilha (para a apresentação)</span>
-          </summary>
-          <div class="detalhe-conteudo">
-            <p class="detalhe-descricao">Funções utilizadas para a validação léxica e análise de delimitadores com a estrutura Pilha (LIFO):</p>
-            <pre tabindex="0" aria-label="Código do analisador"><code id="codigo-analise"></code></pre>
+      <!-- ÁREA DEDICADA 1: Código do Algoritmo com Pilha -->
+      <section class="secao-dedicada" id="secao-algoritmo">
+        <div class="secao-cabecalho">
+          <div class="secao-titulo-row">
+            <div class="secao-icone">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+            </div>
+            <div>
+              <h2>Código do Algoritmo com Pilha</h2>
+              <p class="secao-descricao">Implementação em JavaScript do analisador sintático de delimitadores e cálculo de posições em $O(n)$.</p>
+            </div>
           </div>
-        </details>
+          <button id="botao-copiar-algoritmo" type="button" class="btn-subtle" title="Copiar código do algoritmo">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copiar Algoritmo
+          </button>
+        </div>
 
-        <details class="card-expansivel">
-          <summary>
-            <span class="icone-chevron" aria-hidden="true">›</span>
-            <span>Fundamentos Teóricos: Por que Pilha (LIFO)?</span>
-          </summary>
-          <div class="detalhe-conteudo teoria-grid">
-            <div class="card-teoria">
-              <h3>Regra LIFO (Last-In, First-Out)</h3>
-              <p>O último delimitador aberto deve ser obrigatoriamente o primeiro a fechar. Em <code>([{}])</code>, a chave <code>{</code> que entrou por último precisa fechar antes do colchete <code>[</code>.</p>
+        <div class="visualizador-codigo">
+          <div class="visualizador-barra-topo">
+            <span class="arquivo-nome">analisador-sintatico.js</span>
+            <span class="badge-tag">Regra LIFO • Array Stack</span>
+          </div>
+          <pre tabindex="0" class="bloco-codigo-aberto" aria-label="Código do analisador"><code id="codigo-analise"></code></pre>
+        </div>
+      </section>
+
+      <!-- ÁREA DEDICADA 2: Fundamentos Teóricos da Pilha -->
+      <section class="secao-dedicada" id="secao-teoria">
+        <div class="secao-cabecalho">
+          <div class="secao-titulo-row">
+            <div class="secao-icone">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
             </div>
-            <div class="card-teoria">
-              <h3>Por que não usar Fila ou Contador?</h3>
-              <p>Uma fila retiraria o primeiro aberto. Um contador aceitaria <code>([)]</code> como correto (pois a contagem é igual), mas a ordem de aninhamento está incorreta. Só a Pilha detecta aninhamento inválido.</p>
-            </div>
-            <div class="card-teoria">
-              <h3>Complexidade Assintótica</h3>
-              <p>Leitura linear em $O(n)$, espaço em memória proporcional a $O(n)$ no pior caso e ordenação dos erros em $O(e \log e)$.</p>
+            <div>
+              <h2>Fundamentos Teóricos: Estrutura de Dados Pilha (LIFO)</h2>
+              <p class="secao-descricao">Conceitos acadêmicos que sustentam a validação sintática e o aninhamento de delimitadores.</p>
             </div>
           </div>
-        </details>
+        </div>
+
+        <div class="teoria-grid-expandida">
+          <div class="card-teoria-destaque">
+            <div class="teoria-card-header">
+              <span class="numero-passo">01</span>
+              <h3>Regra LIFO (Last-In, First-Out)</h3>
+            </div>
+            <p>O último delimitador aberto deve ser obrigatoriamente o primeiro a fechar. Cada abertura empilha um registro com seu símbolo, linha e coluna: <code>{ simbolo, indice, linha, coluna }</code>. Ao encontrar um fechamento, o topo da pilha é desempilhado e comparado.</p>
+          </div>
+
+          <div class="card-teoria-destaque">
+            <div class="teoria-card-header">
+              <span class="numero-passo">02</span>
+              <h3>Por que Pilha e não Fila ou Contador?</h3>
+            </div>
+            <p>Contadores falham em casos clássicos como <code>([)]</code> — nele, a quantidade de aberturas e fechamentos bate perfeitamente, mas a ordem de aninhamento está invertida. Uma fila atenderia em FIFO (primeiro a entrar, primeiro a sair), violando o aninhamento. Só a Pilha garante a ordem correta.</p>
+          </div>
+
+          <div class="card-teoria-destaque">
+            <div class="teoria-card-header">
+              <span class="numero-passo">03</span>
+              <h3>Complexidade Algorítmica</h3>
+            </div>
+            <p>A varredura completa do texto é realizada em <strong>tempo linear $O(n)$</strong> em uma única passagem. O consumo de espaço na memória é <strong>$O(n)$ no pior caso</strong> (código composto apenas por aberturas) e a ordenação final da lista de erros é <strong>$O(e \log e)$</strong>.</p>
+          </div>
+
+          <div class="card-teoria-destaque">
+            <div class="teoria-card-header">
+              <span class="numero-passo">04</span>
+              <h3>Tratamento Léxico Sem Falsos Positivos</h3>
+            </div>
+            <p>Caracteres de delimitadores presentes dentro de comentários (<code>//</code> ou <code>/* */</code>) ou dentro de strings fechadas são mascarados antes da análise. Se uma string estiver aberta sem fechamento, o analisador acusa o erro na aspa e interrompe para evitar erros derivados em cascata.</p>
+          </div>
+        </div>
+
+        <!-- Tabela de Casos Canônicos para a Apresentação -->
+        <div class="casos-teste-container">
+          <h3 class="subtitulo-casos">Exemplos Canônicos para a Apresentação</h3>
+          <div class="tabela-responsiva">
+            <table class="tabela-casos">
+              <thead>
+                <tr>
+                  <th>Código de Teste</th>
+                  <th>Comportamento da Pilha</th>
+                  <th>Resultado do Analisador</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>function f() { return [1]; }</code></td>
+                  <td>Todos os <code>(</code>, <code>{</code>, <code>[</code> são desempilhados pelos seus pares.</td>
+                  <td><span class="badge-status sucesso">Válido</span> Nenhum erro encontrado</td>
+                </tr>
+                <tr>
+                  <td><code>([)]</code></td>
+                  <td>Ao ler <code>)</code>, o topo da pilha era <code>[</code> (incompatível).</td>
+                  <td><span class="badge-status erro">Erro</span> Incompatibilidade nas colunas 3 e 4</td>
+                </tr>
+                <tr>
+                  <td><code>const lista = [</code></td>
+                  <td>Ao atingir o fim do texto, <code>[</code> ainda permanece na pilha.</td>
+                  <td><span class="badge-status erro">Erro</span> Abertura sem fechamento na linha 1</td>
+                </tr>
+                <tr>
+                  <td><code>]</code></td>
+                  <td>Ao ler <code>]</code>, a pilha já estava vazia.</td>
+                  <td><span class="badge-status erro">Erro</span> Fechamento sem abertura na linha 1</td>
+                </tr>
+                <tr>
+                  <td><code>const texto = "([{"; // })]</code></td>
+                  <td>Delimitadores em strings e comentários são mascarados.</td>
+                  <td><span class="badge-status sucesso">Válido</span> Delimitadores são ignorados</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
       <footer class="app-footer">
-        <p>Projeto Acadêmico de Estrutura de Dados — Execução 100% Offline • Sem Dependências Externas</p>
+        <p>CodeInspector — Trabalho Prático de Estrutura de Dados (Pilha LIFO) • Execução 100% Offline</p>
       </footer>
     </main>
   </div>

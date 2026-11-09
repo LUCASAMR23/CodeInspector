@@ -459,6 +459,7 @@ const botaoExemploSucesso = document.getElementById("botao-exemplo-sucesso");
 const botaoExemploErro = document.getElementById("botao-exemplo-erro");
 const botaoLimpar = document.getElementById("botao-limpar");
 const botaoCopiar = document.getElementById("botao-copiar");
+const botaoCopiarAlgoritmo = document.getElementById("botao-copiar-algoritmo");
 
 if (botaoExemploSucesso) {
   botaoExemploSucesso.addEventListener("click", () => {
@@ -492,6 +493,18 @@ if (botaoCopiar) {
       const original = botaoCopiar.innerHTML;
       botaoCopiar.textContent = "Copiado!";
       setTimeout(() => { botaoCopiar.innerHTML = original; }, 1800);
+    } catch {}
+  });
+}
+
+if (botaoCopiarAlgoritmo) {
+  botaoCopiarAlgoritmo.addEventListener("click", async () => {
+    if (!codigoAnalise.textContent) return;
+    try {
+      await navigator.clipboard.writeText(codigoAnalise.textContent);
+      const original = botaoCopiarAlgoritmo.innerHTML;
+      botaoCopiarAlgoritmo.textContent = "Copiado!";
+      setTimeout(() => { botaoCopiarAlgoritmo.innerHTML = original; }, 1800);
     } catch {}
   });
 }

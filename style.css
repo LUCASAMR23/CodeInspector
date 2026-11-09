@@ -519,110 +519,252 @@ kbd {
 .numero           { color: var(--cor-numero); }
 .booleano         { color: var(--cor-booleano); font-weight: 600; }
 
-/* 10. Seção Acadêmica e Cards Expansíveis */
-.secao-academica {
-  margin-top: 32px;
+/* 10. Seções Dedicadas: Algoritmo e Teoria */
+.secao-dedicada {
+  margin-top: 40px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.secao-cabecalho {
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.secao-titulo-row {
+  display: flex;
+  align-items: flex-start;
   gap: 12px;
 }
 
-.card-expansivel {
+.secao-icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--accent-blue);
+  border: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.secao-dedicada h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.secao-descricao {
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+/* Bloco Visualizador de Código Aberto */
+.visualizador-codigo {
+  background: var(--bg-editor);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  background: var(--bg-card);
   overflow: hidden;
+}
+
+.visualizador-barra-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 8px 14px;
+  font-family: var(--font-code);
+  font-size: 0.78rem;
+}
+
+.arquivo-nome {
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+.badge-tag {
+  color: var(--accent-blue);
+  background: rgba(56, 139, 253, 0.12);
+  border: 1px solid rgba(56, 139, 253, 0.3);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+}
+
+.bloco-codigo-aberto {
+  max-height: 480px;
+  margin: 0;
+  padding: 16px;
+  overflow: auto;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  color: #e6edf3;
+  font-family: var(--font-code);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Grid Teórico Expandido */
+.teoria-grid-expandida {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.card-teoria-destaque {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px;
   transition: var(--transicao);
 }
 
-.card-expansivel summary {
-  padding: 14px 18px;
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--text-main);
-  cursor: pointer;
-  list-style: none;
+.card-teoria-destaque:hover {
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+}
+
+.teoria-card-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  user-select: none;
-  background: var(--bg-card);
+  margin-bottom: 10px;
 }
 
-.card-expansivel summary::-webkit-details-marker {
-  display: none;
-}
-
-.icone-chevron {
-  display: inline-block;
-  font-size: 1.2rem;
-  color: var(--text-muted);
-  transition: transform var(--transicao);
-  transform-origin: center;
-}
-
-.card-expansivel[open] .icone-chevron {
-  transform: rotate(90deg);
+.numero-passo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(56, 139, 253, 0.15);
   color: var(--accent-blue);
+  font-family: var(--font-code);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid rgba(56, 139, 253, 0.3);
+  flex-shrink: 0;
 }
 
-.card-expansivel[open] summary {
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.detalhe-conteudo {
-  padding: 18px;
-  background: var(--bg-editor);
-}
-
-.detalhe-descricao {
-  margin: 0 0 10px;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-pre {
-  max-height: 400px;
+.card-teoria-destaque h3 {
   margin: 0;
-  padding: 14px;
-  overflow: auto;
-  background: var(--bg-editor);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-subtle);
-  color: #e6edf3;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
 }
 
-/* Grid Teórico */
-.teoria-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
-  background: var(--bg-card);
-}
-
-.card-teoria {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  padding: 14px;
-}
-
-.card-teoria h3 {
-  margin: 0 0 8px;
-  font-size: 0.88rem;
-  color: var(--accent-blue);
-}
-
-.card-teoria p {
+.card-teoria-destaque p {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   color: var(--text-muted);
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
-.card-teoria code {
+.card-teoria-destaque code {
   color: var(--cor-palavra);
   font-family: var(--font-code);
+  font-size: 0.8rem;
+}
+
+/* Tabela de Casos de Teste */
+.casos-teste-container {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 20px;
+  margin-top: 8px;
+}
+
+.subtitulo-casos {
+  margin: 0 0 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.tabela-responsiva {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.tabela-casos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  text-align: left;
+  background: var(--bg-surface);
+}
+
+.tabela-casos th {
+  background: var(--bg-card);
+  color: var(--text-muted);
+  padding: 10px 14px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tabela-casos td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  vertical-align: middle;
+}
+
+.tabela-casos tr:last-child td {
+  border-bottom: 0;
+}
+
+.tabela-casos tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.tabela-casos code {
+  color: var(--text-main);
+  background: var(--bg-editor);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-code);
+  font-size: 0.8rem;
+  border: 1px solid var(--border-subtle);
+}
+
+.badge-status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.badge-status.sucesso {
+  background: var(--sucesso-bg);
+  color: var(--sucesso-text);
+  border: 1px solid rgba(46, 160, 67, 0.3);
+}
+
+.badge-status.erro {
+  background: var(--erro-bg);
+  color: var(--erro-text);
+  border: 1px solid rgba(248, 81, 73, 0.3);
 }
 
 /* 11. Rodapé */
