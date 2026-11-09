@@ -140,56 +140,7 @@ h1 {
   color: var(--text-muted);
 }
 
-/* 4. Guia de Cores / Legenda */
-.guia-cores {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 10px 16px;
-  margin-bottom: 18px;
-  flex-wrap: wrap;
-}
-
-.guia-titulo {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.legenda-itens {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
-.chip-cor {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.82rem;
-  color: var(--text-main);
-}
-
-.ponto {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.cor-palavra { background-color: var(--cor-palavra); }
-.cor-identificador { background-color: var(--cor-identificador); }
-.cor-string { background-color: var(--cor-string); }
-.cor-numero { background-color: var(--cor-numero); }
-.cor-booleano { background-color: var(--cor-booleano); }
-
-/* 5. Moldura do Editor (IDE Card) */
+/* 4. Moldura do Editor (IDE Card) */
 .editor-card {
   background: var(--bg-editor);
   border: 1px solid var(--border-subtle);
@@ -369,20 +320,7 @@ kbd {
   color: var(--text-main);
 }
 
-.texto-ajuda {
-  display: block;
-  margin: 10px 0 0;
-  font-size: 0.82rem;
-  color: var(--text-muted);
-}
-
-.texto-ajuda code {
-  color: var(--accent-blue);
-  font-family: var(--font-code);
-  font-size: 0.8rem;
-}
-
-/* 7. Workspace em 2 Colunas no Desktop */
+/* 6. Workspace em 2 Colunas no Desktop */
 .workspace-grid {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
@@ -418,54 +356,7 @@ kbd {
   padding-right: 6px;
 }
 
-/* Estado de Espera (Placeholder) do Painel de Resultado */
-.resultado-placeholder {
-  flex: 1;
-  margin-top: 24px;
-  padding: 32px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  border: 1px dashed var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.015);
-}
-
-.resultado:not(.neutro) .resultado-placeholder {
-  display: none;
-}
-
-.placeholder-icone {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: rgba(56, 139, 253, 0.12);
-  color: var(--accent-blue);
-  border: 1px solid rgba(56, 139, 253, 0.25);
-  margin-bottom: 14px;
-}
-
-.placeholder-titulo {
-  margin: 0 0 6px !important;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-main) !important;
-}
-
-.placeholder-texto {
-  margin: 0 !important;
-  font-size: 0.84rem;
-  color: var(--text-muted) !important;
-  max-width: 320px;
-  line-height: 1.5;
-}
-
-/* 8. Botão Principal */
+/* 7. Botão Principal */
 .acoes-principais {
   margin: 16px 0 0;
 }
@@ -908,17 +799,7 @@ kbd {
   border: 1px solid rgba(248, 81, 73, 0.3);
 }
 
-/* 11. Rodapé */
-.app-footer {
-  margin-top: 40px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border-subtle);
-  text-align: center;
-  font-size: 0.78rem;
-  color: var(--text-dim);
-}
-
-/* 12. Acessibilidade e Foco */
+/* 10. Acessibilidade e Foco */
 button:focus-visible,
 summary:focus-visible,
 textarea:focus-visible,
