@@ -16,6 +16,9 @@ enquanto você digita ou cola. Strings incluem as aspas que as delimitam.
 A string só recebe verde depois que as aspas são fechadas. Enquanto estiver
 incompleta, seu conteúdo fica na cor normal, sem outros destaques internos.
 O botão “Analisar código” verifica os delimitadores e apresenta os erros.
+Para cada erro identificado, além da mensagem com linha e coluna, um indicador
+visual exibe a linha do código com uma seta (`↑ aqui`) apontando diretamente
+para o caractere problemático.
 
 `script.ts` é o fonte TypeScript desta versão. `script.js` é sua versão para o
 navegador. Se editar o TypeScript e tiver o compilador disponível, gere o JavaScript
@@ -139,7 +142,12 @@ símbolo, mas está na ordem errada. A pilha verifica a ordem.
 quando chegarmos ao final do texto sem encontrar seu fechamento.
 
 **O que foi otimizado?** Antes, cada erro copiava o prefixo do código e separava
-suas linhas. Agora, linha e coluna são contadas durante uma única leitura. Se
+suas linhas. Agora, linha e coluna são contadas durante uma única leitura O(n) e
+armazenadas diretamente em cada objeto de erro, evitando recalcular posições.
+O indicador visual de erro (`criarIndicadorErro`) obtém o snippet da linha sem
+reprocessar o texto. As expressões regulares de identificadores foram compiladas
+uma única vez no escopo global e o código limpo é reaproveitado entre análise e
+destaque, garantindo digitação e análise com máxima performance. Se
 `n` é o tamanho do texto e `e` o número de erros, a leitura é O(n) e a ordenação
 final é O(e log e). O espaço usado é O(n) no pior caso.
 

@@ -9,13 +9,19 @@ interface DelimitadorAberto extends Posicao {
   indice: number;
 }
 
-interface Erro {
+interface Erro extends Posicao {
   mensagem: string;
   indice: number;
 }
 
 interface Analise {
   erros: Erro[];
+  codigoLimpo: string;
+}
+
+interface IndicadorErro {
+  textoLinha: string;
+  espacosAteErro: string;
 }
 
 interface StringIncompleta {
@@ -51,7 +57,7 @@ const codigoDestacado = obterElemento<HTMLElement>("codigo-destacado");
 const codigoAnalise = obterElemento<HTMLElement>("codigo-analise");
 
 
-// 3. Pares de delimitadores e regras de destaque
+// 3. Pares de delimitadores, padrões compilados e regras de destaque
 const pares: Record<string, string> = { "(": ")", "[": "]", "{": "}" };
 const padraoTextos = /\/\*[\s\S]*?(?:\*\/|$)|\/\/[^\r\n\u2028\u2029]*|"(?:\\(?:\r\n|[\s\S])|[^"\\\r\n\u2028\u2029])*"?|'(?:\\(?:\r\n|[\s\S])|[^'\\\r\n\u2028\u2029])*'?|`(?:\\[\s\S]|[^`\\])*`?/g;
 const padraoNumeros = /(?:0[xX][\da-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+)n?|\d[\d_]*n|(?:\d[\d_]*(?:\.[\d_]*)?|\.\d[\d_]*)(?:[eE][+-]?[\d_]+)?/;
@@ -70,8 +76,20 @@ const palavrasReservadas = new Set([
   "throw", "try", "typeof", "var", "void", "while", "with", "yield"
 ]);
 
+// Expressões regulares compiladas uma única vez no escopo global para máxima performance
+const padraoNomeIdentificador = "[\\p{ID_Start}$_][\\p{ID_Continue}$\\u200c\\u200d]*";
+const padraoInicioNome = new RegExp(`^(?:\\.\\.\\.)?(${padraoNomeIdentificador})`, "u");
+const padraoDeclaracaoVariaveis = /\b(?:const|let|var)\s+([^;\r\n]+)/g;
+const padraoDeclaracaoFuncaoClasse = new RegExp(`\\b(?:function\\b\\s*\\*?|class\\b)\\s*(${padraoNomeIdentificador})`, "gu");
+const padraoParametrosFuncao = new RegExp(
+  `\\bfunction\\b\\s*\\*?\\s*(?:${padraoNomeIdentificador})?\\s*\\(([^()]*)\\)`
+    + `|\\(([^()]*)\\)\\s*=>|(${padraoNomeIdentificador})\\s*=>`, "gu"
+);
+const padraoMetodos = new RegExp(`(${padraoNomeIdentificador})\\s*\\(([^()]*)\\)\\s*\\{`, "gu");
+const padraoCampos = new RegExp(`(?:[{,]\\s*(${padraoNomeIdentificador})\\s*:)|(?:[{;]\\s*(${padraoNomeIdentificador})\\s*=)`, "gu");
 
-// 4. Preparação do texto e formatação das posições
+
+// 4. Preparação do texto, posições e indicador visual
 // shortcut: regex e expressões em crases exigem leitura léxica mais completa; ampliar se forem usadas.
 function ignorarStringsEComentarios(codigo: string): string {
   // Espaços mantêm os índices originais; quebras mantêm as linhas originais.
@@ -80,6 +98,25 @@ function ignorarStringsEComentarios(codigo: string): string {
 
 function formatarPosicao(posicao: Posicao): string {
   return `linha ${posicao.linha}, coluna ${posicao.coluna}`;
+}
+
+// Cria uma cópia da linha do usuário, preservando tabs para a seta alinhar diretamente sob o caractere.
+function criarIndicadorErro(codigo: string, erro: Erro): IndicadorErro {
+  let inicioLinha = erro.indice;
+  let fimLinha = erro.indice;
+
+  while (inicioLinha > 0 && !"\r\n\u2028\u2029".includes(codigo[inicioLinha - 1])) {
+    inicioLinha--;
+  }
+
+  while (fimLinha < codigo.length && !"\r\n\u2028\u2029".includes(codigo[fimLinha])) {
+    fimLinha++;
+  }
+
+  return {
+    textoLinha: codigo.slice(inicioLinha, fimLinha),
+    espacosAteErro: codigo.slice(inicioLinha, erro.indice).replace(/[^\t]/g, " ")
+  };
 }
 
 function stringEstaFechada(texto: string): boolean {
@@ -136,10 +173,12 @@ function analisarCodigo(codigo: string): Analise {
       erros.push({
         mensagem: `String sem fechamento em ${formatarPosicao({ linha, coluna })}. `
           + `Esperado “${stringIncompleta.aspas}”. Corrija a string para continuar a análise.`,
-        indice
+        indice,
+        linha,
+        coluna
       });
       // Os delimitadores seguintes podem pertencer ao texto da string incompleta.
-      return { erros };
+      return { erros, codigoLimpo };
     }
 
     if (pares[caractere]) {
@@ -157,7 +196,9 @@ function analisarCodigo(codigo: string): Analise {
     if (!abertura) {
       erros.push({
         mensagem: `“${caractere}” sem abertura correspondente em ${posicao}.`,
-        indice
+        indice,
+        linha,
+        coluna
       });
     } else if (caractere !== pares[abertura.simbolo]) {
       // Consumimos o par incompatível para não repetir a mesma abertura como outro erro.
@@ -165,7 +206,9 @@ function analisarCodigo(codigo: string): Analise {
         mensagem: `“${caractere}” incompatível em ${posicao}. `
           + `Esperado “${pares[abertura.simbolo]}” para “${abertura.simbolo}” `
           + `aberto em ${formatarPosicao(abertura)}.`,
-        indice
+        indice,
+        linha,
+        coluna
       });
     }
   }
@@ -174,38 +217,39 @@ function analisarCodigo(codigo: string): Analise {
     erros.push({
       mensagem: `“${abertura.simbolo}” sem fechamento correspondente `
         + `em ${formatarPosicao(abertura)}. Esperado “${pares[abertura.simbolo]}”.`,
-      indice: abertura.indice
+      indice: abertura.indice,
+      linha: abertura.linha,
+      coluna: abertura.coluna
     });
   }
 
   return {
-    erros: erros.sort((primeiro, segundo) => primeiro.indice - segundo.indice)
+    erros: erros.sort((primeiro, segundo) => primeiro.indice - segundo.indice),
+    codigoLimpo
   };
 }
 
 
 // 6. Destaque no próprio campo: texto digitado nunca é interpretado como HTML
 // shortcut: reconhecimento de declarações usuais; usar um parser se precisar resolver escopos completos.
-function encontrarNomesDefinidos(codigo: string): NomesDefinidos {
-  const codigoLimpo = ignorarStringsEComentarios(codigo);
+function encontrarNomesDefinidos(codigo: string, codigoLimpoPreexistente?: string): NomesDefinidos {
+  const codigoLimpo = codigoLimpoPreexistente ?? ignorarStringsEComentarios(codigo);
   const nomes = new Set<string>();
   const propriedades = new Set<string>();
-  const nome = "[\\p{ID_Start}$_][\\p{ID_Continue}$\\u200c\\u200d]*";
-  const inicioNome = new RegExp(`^(?:\\.\\.\\.)?(${nome})`, "u");
 
   function adicionarVinculos(texto: string): void {
     const vinculos = texto.trim().replace(/^[{\[]|[}\]]$/g, "");
 
     for (const parte of vinculos.split(",")) {
       const vinculo = (parte.split("=")[0].split(":").pop() ?? "").trim();
-      const encontrado = vinculo.match(inicioNome);
+      const encontrado = vinculo.match(padraoInicioNome);
       if (encontrado && !palavrasReservadas.has(encontrado[1])) {
         nomes.add(encontrado[1]);
       }
     }
   }
 
-  for (const declaracao of codigoLimpo.matchAll(/\b(?:const|let|var)\s+([^;\r\n]+)/g)) {
+  for (const declaracao of codigoLimpo.matchAll(padraoDeclaracaoVariaveis)) {
     let inicio = 0;
     let fimNome = -1;
     let nivel = 0;
@@ -228,21 +272,15 @@ function encontrarNomesDefinidos(codigo: string): NomesDefinidos {
     }
   }
 
-  const declaracoes = new RegExp(`\\b(?:function\\b\\s*\\*?|class\\b)\\s*(${nome})`, "gu");
-  for (const declaracao of codigoLimpo.matchAll(declaracoes)) {
+  for (const declaracao of codigoLimpo.matchAll(padraoDeclaracaoFuncaoClasse)) {
     nomes.add(declaracao[1]);
   }
 
-  const parametros = new RegExp(
-    `\\bfunction\\b\\s*\\*?\\s*(?:${nome})?\\s*\\(([^()]*)\\)`
-      + `|\\(([^()]*)\\)\\s*=>|(${nome})\\s*=>`, "gu"
-  );
-  for (const funcao of codigoLimpo.matchAll(parametros)) {
+  for (const funcao of codigoLimpo.matchAll(padraoParametrosFuncao)) {
     adicionarVinculos(funcao[1] ?? funcao[2] ?? funcao[3]);
   }
 
-  const metodos = new RegExp(`(${nome})\\s*\\(([^()]*)\\)\\s*\\{`, "gu");
-  for (const metodo of codigoLimpo.matchAll(metodos)) {
+  for (const metodo of codigoLimpo.matchAll(padraoMetodos)) {
     if (!palavrasReservadas.has(metodo[1])) {
       if (metodo[1] !== "constructor") {
         nomes.add(metodo[1]);
@@ -252,8 +290,7 @@ function encontrarNomesDefinidos(codigo: string): NomesDefinidos {
     }
   }
 
-  const campos = new RegExp(`(?:[{,]\\s*(${nome})\\s*:)|(?:[{;]\\s*(${nome})\\s*=)`, "gu");
-  for (const campo of codigoLimpo.matchAll(campos)) {
+  for (const campo of codigoLimpo.matchAll(padraoCampos)) {
     propriedades.add(campo[1] ?? campo[2]);
   }
 
@@ -279,9 +316,9 @@ function nomeFoiDefinido(texto: string, indice: number, definidos: NomesDefinido
   return definidos.propriedades.has(texto) && (definidos.nomes.has(dono) || dono === "this");
 }
 
-function destacarCodigo(codigo: string): void {
+function destacarCodigo(codigo: string, codigoLimpoPreexistente?: string): void {
   const fragmento = document.createDocumentFragment();
-  const definidos = encontrarNomesDefinidos(codigo);
+  const definidos = encontrarNomesDefinidos(codigo, codigoLimpoPreexistente);
   let inicio = 0;
 
   for (const trecho of codigo.matchAll(padraoDestaques)) {
@@ -352,7 +389,7 @@ function mostrarResultado(): void {
   }
 
   const analise = analisarCodigo(codigo);
-  destacarCodigo(codigo);
+  destacarCodigo(codigo, analise.codigoLimpo);
   sincronizarRolagem();
   painelResultado.className = `resultado ${analise.erros.length ? "erro" : "sucesso"}`;
 
@@ -367,7 +404,20 @@ function mostrarResultado(): void {
 
   for (const erro of analise.erros) {
     const item = document.createElement("li");
-    item.textContent = erro.mensagem;
+    const mensagem = document.createElement("p");
+    mensagem.textContent = erro.mensagem;
+
+    const indicador = criarIndicadorErro(codigo, erro);
+    const localizacao = document.createElement("pre");
+    const linha = document.createElement("code");
+    const numeroLinha = String(erro.linha);
+    const margem = " ".repeat(numeroLinha.length);
+
+    linha.textContent = `${numeroLinha} | ${indicador.textoLinha}\n${margem} | ${indicador.espacosAteErro}\u2191 aqui`;
+    localizacao.className = "localizacao-erro";
+    localizacao.setAttribute("aria-label", `Local do erro: linha ${erro.linha}, coluna ${erro.coluna}`);
+    localizacao.append(linha);
+    item.append(mensagem, localizacao);
     listaErros.append(item);
   }
 
@@ -385,6 +435,6 @@ editorCodigo.classList.add("com-destaque");
 
 codigoAnalise.textContent = `const pares = ${JSON.stringify(pares, null, 2)};\n\n`
   + `const padraoTextos = ${padraoTextos};\n\n`
-  + [ignorarStringsEComentarios, formatarPosicao, stringEstaFechada, encontrarStringIncompleta, analisarCodigo]
+  + [ignorarStringsEComentarios, formatarPosicao, criarIndicadorErro, stringEstaFechada, encontrarStringIncompleta, analisarCodigo]
     .map(funcao => funcao.toString())
     .join("\n\n");

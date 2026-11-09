@@ -15,6 +15,7 @@ function criarNo(texto = "") {
     ouvintes: {},
     append(...filhos) { this.filhos.push(...filhos); },
     replaceChildren(...filhos) { this.filhos = filhos; },
+    setAttribute() {},
     addEventListener(evento, funcao) { this.ouvintes[evento] = funcao; }
   };
 }
@@ -35,7 +36,7 @@ const contexto = {
     createDocumentFragment: () => criarNo(),
     createTextNode: texto => criarNo(texto),
     createElement: nome => {
-      verificar.ok(["li", "span"].includes(nome));
+      verificar.ok(["li", "span", "p", "pre", "code"].includes(nome));
       return criarNo();
     }
   }
@@ -239,6 +240,14 @@ elementos.codigo.value = exemploImagem;
 elementos["botao-analisar"].ouvintes.click();
 verificar.equal(elementos["lista-erros"].filhos.length, 1);
 verificar.equal(elementos["resumo-resultado"].textContent, "1 erro encontrado:");
+const textoErroPrimeiro = lerTexto(elementos["lista-erros"].filhos[0]);
+verificar.match(textoErroPrimeiro, /const numeros = \[1, 2, 3\);/);
+verificar.match(textoErroPrimeiro, /\u2191 aqui/);
+
+const analiseExemplo = analisar(exemploImagem);
+verificar.equal(typeof analiseExemplo.erros[0].linha, "number");
+verificar.equal(typeof analiseExemplo.erros[0].coluna, "number");
+verificar.equal(analiseExemplo.erros[0].linha, 2);
 
 elementos.codigo.ouvintes.input();
 verificar.equal(elementos["resumo-resultado"].textContent, "Aguardando análise");
