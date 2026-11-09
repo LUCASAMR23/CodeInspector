@@ -15,6 +15,7 @@ function criarNo(texto = "") {
     ouvintes: {},
     append(...filhos) { this.filhos.push(...filhos); },
     replaceChildren(...filhos) { this.filhos = filhos; },
+    setAttribute() {},
     addEventListener(evento, funcao) { this.ouvintes[evento] = funcao; }
   };
 }
@@ -35,7 +36,7 @@ const contexto = {
     createDocumentFragment: () => criarNo(),
     createTextNode: texto => criarNo(texto),
     createElement: nome => {
-      verificar.ok(["li", "span"].includes(nome));
+      verificar.ok(["li", "span", "p", "pre", "code"].includes(nome));
       return criarNo();
     }
   }
@@ -167,6 +168,8 @@ elementos.codigo.value = exemploImagem;
 elementos["botao-analisar"].ouvintes.click();
 verificar.equal(elementos["lista-erros"].filhos.length, 1);
 verificar.equal(elementos["resumo-resultado"].textContent, "1 erro encontrado:");
+verificar.match(lerTexto(elementos["lista-erros"].filhos[0]), /const numeros = \[1, 2, 3\);/);
+verificar.match(lerTexto(elementos["lista-erros"].filhos[0]), /\u2191 aqui/);
 
 elementos.codigo.ouvintes.input();
 verificar.equal(elementos["resumo-resultado"].textContent, "Aguardando análise");

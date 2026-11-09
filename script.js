@@ -60,6 +60,23 @@ function posicaoNoIndice(codigo, indiceDesejado) {
     }
     return { linha, coluna: coluna + 1 };
 }
+// Cria uma pequena cÃ³pia da linha do usuÃ¡rio, preservando tabs para a seta ficar alinhada.
+function criarIndicadorErro(codigo, indice) {
+    const posicao = posicaoNoIndice(codigo, indice);
+    let inicioLinha = indice;
+    let fimLinha = indice;
+    while (inicioLinha > 0 && !"\r\n\u2028\u2029".includes(codigo[inicioLinha - 1])) {
+        inicioLinha--;
+    }
+    while (fimLinha < codigo.length && !"\r\n\u2028\u2029".includes(codigo[fimLinha])) {
+        fimLinha++;
+    }
+    return {
+        ...posicao,
+        textoLinha: codigo.slice(inicioLinha, fimLinha),
+        espacosAteErro: codigo.slice(inicioLinha, indice).replace(/[^\t]/g, " ")
+    };
+}
 function encontrarAspasDuplasAbertas(codigo) {
     let estado = "normal";
     let indiceAbertura = -1;
@@ -240,7 +257,18 @@ function mostrarResultado() {
         : `${analise.erros.length} erros encontrados:`;
     for (const erro of analise.erros) {
         const item = document.createElement("li");
-        item.textContent = erro.mensagem;
+        const mensagem = document.createElement("p");
+        mensagem.textContent = erro.mensagem;
+        const indicador = criarIndicadorErro(codigo, erro.indice);
+        const localizacao = document.createElement("pre");
+        const linha = document.createElement("code");
+        const numeroLinha = String(indicador.linha);
+        const margem = " ".repeat(numeroLinha.length);
+        linha.textContent = `${numeroLinha} | ${indicador.textoLinha}\n${margem} | ${indicador.espacosAteErro}\u2191 aqui`;
+        localizacao.className = "localizacao-erro";
+        localizacao.setAttribute("aria-label", `Local do erro: linha ${indicador.linha}, coluna ${indicador.coluna}`);
+        localizacao.append(linha);
+        item.append(mensagem, localizacao);
         listaErros.append(item);
     }
     listaErros.hidden = false;
@@ -253,6 +281,6 @@ atualizarEditor();
 editorCodigo.classList.add("com-destaque");
 codigoAnalise.textContent = `const pares = ${JSON.stringify(pares, null, 2)};\n\n`
     + `const padraoTextos = ${padraoTextos};\n\n`
-    + [ignorarStringsEComentarios, formatarPosicao, posicaoNoIndice, encontrarAspasDuplasAbertas, analisarCodigo]
+    + [ignorarStringsEComentarios, formatarPosicao, posicaoNoIndice, criarIndicadorErro, encontrarAspasDuplasAbertas, analisarCodigo]
         .map(funcao => funcao.toString())
         .join("\n\n");

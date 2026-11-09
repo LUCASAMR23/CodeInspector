@@ -154,6 +154,25 @@ pre:focus-visible {
   overflow-wrap: anywhere;
 }
 
+.resultado li + li {
+  margin-top: 18px;
+}
+
+.resultado li p {
+  margin: 0;
+}
+
+/* Mostra uma cÃ³pia da linha analisada e a seta exatamente sob o caractere problemÃ¡tico. */
+.localizacao-erro {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  border-left: 3px solid #ff7b85;
+  border-radius: 0 4px 4px 0;
+  background: #24191b;
+  color: #ffe1e3;
+}
+
 .resultado.sucesso {
   border-color: #3d8c5a;
   background: #203d2b;
