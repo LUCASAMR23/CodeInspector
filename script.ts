@@ -361,6 +361,21 @@ function sincronizarRolagem(): void {
   camadaDestaque.scrollLeft = campoCodigo.scrollLeft;
 }
 
+function atualizarEstatisticas(): void {
+  const contadorLinhas = document.getElementById("contador-linhas");
+  const contadorCaracteres = document.getElementById("contador-caracteres");
+  const codigo = campoCodigo.value;
+
+  if (contadorLinhas) {
+    const totalLinhas = codigo ? codigo.split(/\r\n|\r|\n/).length : 1;
+    contadorLinhas.textContent = `${totalLinhas} ${totalLinhas === 1 ? "linha" : "linhas"}`;
+  }
+
+  if (contadorCaracteres) {
+    contadorCaracteres.textContent = `${codigo.length} caracteres`;
+  }
+}
+
 
 // 7. Exibição do resultado e limpeza ao editar
 function limparResultado(): void {
@@ -375,6 +390,7 @@ function atualizarEditor(): void {
   limparResultado();
   destacarCodigo(codigo);
   sincronizarRolagem();
+  atualizarEstatisticas();
 }
 
 function mostrarResultado(): void {
@@ -429,6 +445,56 @@ function mostrarResultado(): void {
 botaoAnalisar.addEventListener("click", mostrarResultado);
 campoCodigo.addEventListener("input", atualizarEditor);
 campoCodigo.addEventListener("scroll", sincronizarRolagem);
+
+// Atalho de teclado para rodar a análise: Ctrl+Enter ou Cmd+Enter
+campoCodigo.addEventListener("keydown", (evento) => {
+  if ((evento.ctrlKey || evento.metaKey) && evento.key === "Enter") {
+    evento.preventDefault();
+    mostrarResultado();
+  }
+});
+
+// Ações rápidas da barra de ferramentas do editor
+const botaoExemploSucesso = document.getElementById("botao-exemplo-sucesso");
+const botaoExemploErro = document.getElementById("botao-exemplo-erro");
+const botaoLimpar = document.getElementById("botao-limpar");
+const botaoCopiar = document.getElementById("botao-copiar");
+
+if (botaoExemploSucesso) {
+  botaoExemploSucesso.addEventListener("click", () => {
+    campoCodigo.value = `// Código JavaScript válido para apresentação\nfunction calcularDesconto(valor, taxa) {\n  const valido = true;\n  if (valor > 100 && valido) {\n    return valor * (1 - taxa);\n  }\n  return valor;\n}\n\nconst total = calcularDesconto(250, 0.15);\nconsole.log("Total final:", total);`;
+    atualizarEditor();
+    mostrarResultado();
+  });
+}
+
+if (botaoExemploErro) {
+  botaoExemploErro.addEventListener("click", () => {
+    campoCodigo.value = `// Demonstração de erros de delimitadores e strings\nfunction testarAnalise() {\n  const numeros = [1, 2, 3);\n  const mensagem = "string sem fechamento;\n  if (numeros.length > 0) {\n    return true;\n  }\n`;
+    atualizarEditor();
+    mostrarResultado();
+  });
+}
+
+if (botaoLimpar) {
+  botaoLimpar.addEventListener("click", () => {
+    campoCodigo.value = "";
+    atualizarEditor();
+    campoCodigo.focus();
+  });
+}
+
+if (botaoCopiar) {
+  botaoCopiar.addEventListener("click", async () => {
+    if (!campoCodigo.value) return;
+    try {
+      await navigator.clipboard.writeText(campoCodigo.value);
+      const original = botaoCopiar.innerHTML;
+      botaoCopiar.textContent = "Copiado!";
+      setTimeout(() => { botaoCopiar.innerHTML = original; }, 1800);
+    } catch {}
+  });
+}
 
 atualizarEditor();
 editorCodigo.classList.add("com-destaque");

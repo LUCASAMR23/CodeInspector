@@ -3,43 +3,170 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Verificador simples de delimitadores JavaScript.">
-  <title>Analisador Sintático</title>
+  <meta name="description" content="Analisador sintático de código JavaScript com pilha e realce de sintaxe em tempo real.">
+  <title>CodeInspector — Analisador Sintático com Pilha</title>
   <link rel="stylesheet" href="style.css">
   <script src="script.js" defer></script>
 </head>
 <body>
-  <main>
-    <!-- 1. Apresentação e entrada do código -->
-    <h1>Analisador Sintático</h1>
-    <p class="descricao">Verifique parênteses, colchetes e chaves e destaque palavras reservadas de JavaScript.</p>
+  <div class="app-layout">
+    <!-- Cabeçalho Principal -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="brand">
+          <div class="logo-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+              <line x1="12" y1="2" x2="12" y2="22" stroke-dasharray="2 2"></line>
+            </svg>
+          </div>
+          <div>
+            <div class="brand-title-row">
+              <h1>CodeInspector</h1>
+              <span class="badge-academico" title="Trabalho Prático de Estrutura de Dados">PRJ.ED.11 • Pilha (LIFO)</span>
+            </div>
+            <p class="descricao">Análise sintática de delimitadores e realce léxico em tempo real com Estrutura de Dados Pilha.</p>
+          </div>
+        </div>
+      </div>
+    </header>
 
-    <label for="codigo">Código JavaScript</label>
-    <div id="editor-codigo" class="editor-codigo">
-      <pre id="camada-destaque" class="camada-destaque" aria-hidden="true"><code id="codigo-destacado"></code></pre>
-      <textarea id="codigo" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off"
-        aria-describedby="ajuda-codigo" placeholder="Escreva ou cole seu código aqui"></textarea>
-    </div>
-    <small id="ajuda-codigo">Palavras reservadas, números e strings ganham cor ao digitar. Strings e comentários são ignorados na verificação.</small>
+    <main class="main-content">
+      <!-- Guia de Cores / Legenda -->
+      <section class="guia-cores" aria-label="Legenda de cores da sintaxe">
+        <span class="guia-titulo">Destaque de Sintaxe:</span>
+        <div class="legenda-itens">
+          <span class="chip-cor"><span class="ponto cor-palavra"></span> Palavra reservada</span>
+          <span class="chip-cor"><span class="ponto cor-identificador"></span> Identificador</span>
+          <span class="chip-cor"><span class="ponto cor-string"></span> String</span>
+          <span class="chip-cor"><span class="ponto cor-numero"></span> Número</span>
+          <span class="chip-cor"><span class="ponto cor-booleano"></span> Booleano</span>
+        </div>
+      </section>
 
-    <div class="acoes">
-      <button id="botao-analisar" type="button">Analisar código</button>
-    </div>
+      <!-- Janela do Editor de Código (IDE Frame) -->
+      <section class="editor-card">
+        <div class="editor-header">
+          <div class="janela-controles" aria-hidden="true">
+            <span class="ponto-janela fechar"></span>
+            <span class="ponto-janela minimizar"></span>
+            <span class="ponto-janela expandir"></span>
+            <span class="arquivo-aba">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              codigo.js
+            </span>
+          </div>
 
-    <!-- 2. Resultado da análise -->
-    <section id="painel-resultado" class="resultado neutro" aria-live="polite">
-      <h2>Resultado</h2>
-      <p id="resumo-resultado">Aguardando análise</p>
-      <ul id="lista-erros" hidden></ul>
-    </section>
+          <div class="editor-acoes-rapidas">
+            <button id="botao-exemplo-sucesso" type="button" class="btn-subtle" title="Carregar exemplo de código sem erros">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Exemplo Válido
+            </button>
+            <button id="botao-exemplo-erro" type="button" class="btn-subtle" title="Carregar exemplo com erros de delimitadores e strings">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              Exemplo c/ Erro
+            </button>
+            <button id="botao-copiar" type="button" class="btn-subtle" title="Copiar código para a área de transferência">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              Copiar
+            </button>
+            <button id="botao-limpar" type="button" class="btn-subtle" title="Limpar editor">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              Limpar
+            </button>
+          </div>
+        </div>
 
-    <p class="observacao">A análise verifica delimitadores; não valida toda a sintaxe do JavaScript.</p>
+        <label for="codigo" class="sr-only">Código JavaScript para análise</label>
+        <div id="editor-codigo" class="editor-codigo">
+          <pre id="camada-destaque" class="camada-destaque" aria-hidden="true"><code id="codigo-destacado"></code></pre>
+          <textarea id="codigo" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off"
+            aria-describedby="ajuda-codigo" placeholder="// Escreva ou cole seu código JavaScript aqui...&#10;function exemplo() {&#10;  return [1, 2, 3];&#10;}"></textarea>
+        </div>
 
-    <!-- 3. Apoio para a apresentação -->
-    <details>
-      <summary>Ver o código usado para encontrar os erros</summary>
-      <pre tabindex="0" aria-label="Código do analisador"><code id="codigo-analise"></code></pre>
-    </details>
-  </main>
+        <div class="editor-statusbar">
+          <div class="status-left">
+            <span id="contador-linhas">1 linha</span>
+            <span class="divisor">•</span>
+            <span id="contador-caracteres">0 caracteres</span>
+          </div>
+          <div class="status-right">
+            <span class="atalho-dica">Atalho: <kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
+            <span class="divisor">•</span>
+            <span>JavaScript (UTF-16)</span>
+          </div>
+        </div>
+      </section>
+
+      <small id="ajuda-codigo" class="texto-ajuda">
+        Delimitadores analisados: <code>( )</code>, <code>[ ]</code>, <code>{ }</code> e strings <code>" "</code>, <code>' '</code>, <code>` `</code>. Comentários e strings fechadas são ignorados na checagem da pilha.
+      </small>
+
+      <!-- Barra de Ações Principais -->
+      <div class="acoes-principais">
+        <button id="botao-analisar" type="button" class="btn-primario">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          Analisar código
+        </button>
+      </div>
+
+      <!-- Painel de Resultados -->
+      <section id="painel-resultado" class="resultado neutro" aria-live="polite">
+        <div class="resultado-cabecalho">
+          <div class="status-icone" aria-hidden="true"></div>
+          <div>
+            <h2>Diagnóstico da Análise</h2>
+            <p id="resumo-resultado">Aguardando análise</p>
+          </div>
+        </div>
+        <ul id="lista-erros" class="lista-erros" hidden></ul>
+      </section>
+
+      <!-- Seção Acadêmica e Código-fonte de Apoio -->
+      <section class="secao-academica">
+        <details class="card-expansivel">
+          <summary>
+            <span class="icone-chevron" aria-hidden="true">›</span>
+            <span>Ver o código do algoritmo com Pilha (para a apresentação)</span>
+          </summary>
+          <div class="detalhe-conteudo">
+            <p class="detalhe-descricao">Funções utilizadas para a validação léxica e análise de delimitadores com a estrutura Pilha (LIFO):</p>
+            <pre tabindex="0" aria-label="Código do analisador"><code id="codigo-analise"></code></pre>
+          </div>
+        </details>
+
+        <details class="card-expansivel">
+          <summary>
+            <span class="icone-chevron" aria-hidden="true">›</span>
+            <span>Fundamentos Teóricos: Por que Pilha (LIFO)?</span>
+          </summary>
+          <div class="detalhe-conteudo teoria-grid">
+            <div class="card-teoria">
+              <h3>Regra LIFO (Last-In, First-Out)</h3>
+              <p>O último delimitador aberto deve ser obrigatoriamente o primeiro a fechar. Em <code>([{}])</code>, a chave <code>{</code> que entrou por último precisa fechar antes do colchete <code>[</code>.</p>
+            </div>
+            <div class="card-teoria">
+              <h3>Por que não usar Fila ou Contador?</h3>
+              <p>Uma fila retiraria o primeiro aberto. Um contador aceitaria <code>([)]</code> como correto (pois a contagem é igual), mas a ordem de aninhamento está incorreta. Só a Pilha detecta aninhamento inválido.</p>
+            </div>
+            <div class="card-teoria">
+              <h3>Complexidade Assintótica</h3>
+              <p>Leitura linear em $O(n)$, espaço em memória proporcional a $O(n)$ no pior caso e ordenação dos erros em $O(e \log e)$.</p>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <footer class="app-footer">
+        <p>Projeto Acadêmico de Estrutura de Dados — Execução 100% Offline • Sem Dependências Externas</p>
+      </footer>
+    </main>
+  </div>
 </body>
 </html>

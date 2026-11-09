@@ -1,86 +1,336 @@
-/* 1. Base e estrutura */
+/* ==========================================================================
+   CodeInspector — Design System & Folha de Estilos
+   Projeto Acadêmico PRJ.ED.11 • Estrutura de Dados (Pilha)
+   ========================================================================== */
+
+/* 1. Variáveis e Design Tokens */
 :root {
-  font-family: Arial, sans-serif;
-  color: #f1f1f1;
-  background: #202124;
+  --bg-app: #0d1117;
+  --bg-card: #161b22;
+  --bg-surface: #21262d;
+  --bg-editor: #0f141c;
+  
+  --border-subtle: #30363d;
+  --border-muted: #21262d;
+  --border-focus: #58a6ff;
+  
+  --text-main: #f0f6fc;
+  --text-muted: #8b949e;
+  --text-dim: #6e7681;
+  
+  /* Cores de Sintaxe */
+  --cor-palavra: #ffd166;
+  --cor-identificador: #f9a8d4;
+  --cor-string: #86efac;
+  --cor-numero: #93c5fd;
+  --cor-booleano: #c4b5fd;
+  
+  /* Estados e Acentos */
+  --accent-primary: #238636;
+  --accent-primary-hover: #2ea043;
+  --accent-blue: #388bfd;
+  
+  --sucesso-bg: rgba(46, 160, 67, 0.12);
+  --sucesso-border: #2ea043;
+  --sucesso-text: #3fb950;
+  
+  --erro-bg: rgba(248, 81, 73, 0.12);
+  --erro-border: #f85149;
+  --erro-text: #ff7b72;
+  --erro-highlight: #2c1619;
+  
+  --neutro-bg: #161b22;
+  --neutro-border: #30363d;
+  --neutro-text: #8b949e;
+
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-code: "JetBrains Mono", Consolas, "Courier New", monospace;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --transicao: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-* {
+/* 2. Reset e Estrutura Global */
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
+  padding: 0;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  font-family: var(--font-ui);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-main {
-  max-width: 800px;
-  margin: 42px auto;
-  padding: 0 20px;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 20px 60px;
+  flex: 1;
+}
+
+/* 3. Cabeçalho Principal */
+.app-header {
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  padding: 24px 20px;
+  margin-bottom: 24px;
+}
+
+.header-content {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #1f6feb 0%, #388bfd 100%);
+  color: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(31, 111, 235, 0.3);
+  flex-shrink: 0;
+}
+
+.brand-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 h1 {
-  margin: 0 0 12px;
-  font-size: 1.75rem;
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
 }
 
-h2 {
-  margin: 0 0 8px;
-  font-size: 1.1rem;
+.badge-academico {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--bg-surface);
+  color: var(--accent-blue);
+  border: 1px solid rgba(56, 139, 253, 0.3);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
-.descricao,
-small,
-.observacao {
-  color: #c3c5c8;
+.descricao {
+  margin: 4px 0 0;
+  font-size: 0.92rem;
+  color: var(--text-muted);
 }
 
+/* 4. Guia de Cores / Legenda */
+.guia-cores {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
 
-/* 2. Campo de código e botão */
-label {
-  display: block;
-  margin: 32px 0 8px;
-  font-size: 0.9rem;
-  font-weight: bold;
+.guia-titulo {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.legenda-itens {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.chip-cor {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text-main);
+}
+
+.ponto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cor-palavra { background-color: var(--cor-palavra); }
+.cor-identificador { background-color: var(--cor-identificador); }
+.cor-string { background-color: var(--cor-string); }
+.cor-numero { background-color: var(--cor-numero); }
+.cor-booleano { background-color: var(--cor-booleano); }
+
+/* 5. Moldura do Editor (IDE Card) */
+.editor-card {
+  background: var(--bg-editor);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: border-color var(--transicao);
+}
+
+.editor-card:focus-within {
+  border-color: var(--border-focus);
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 8px 14px;
+  user-select: none;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.janela-controles {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ponto-janela {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.ponto-janela.fechar { background: #ff5f56; }
+.ponto-janela.minimizar { background: #ffbd2e; }
+.ponto-janela.expandir { background: #27c93f; }
+
+.arquivo-aba {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-editor);
+  color: var(--text-main);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-code);
+  font-size: 0.8rem;
+  margin-left: 8px;
+  border: 1px solid var(--border-subtle);
+}
+
+.editor-acoes-rapidas {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.btn-subtle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transicao);
+}
+
+.btn-subtle:hover {
+  background: var(--bg-surface);
+  color: var(--text-main);
+  border-color: #8b949e;
+}
+
+/* 6. Editor e Camada de Destaque */
+.editor-codigo {
+  position: relative;
+  min-height: 280px;
+}
+
+textarea,
+pre {
+  font-family: var(--font-code);
+  font-size: 14px;
+  line-height: 1.6;
+  font-variant-ligatures: none;
+  tab-size: 4;
 }
 
 textarea {
   display: block;
   width: 100%;
-  min-height: 267px;
-  padding: 14px;
-  border: 1px solid #62656b;
-  border-radius: 5px;
-  background: #1b1c20;
-  color: #eee;
+  min-height: 280px;
+  padding: 16px;
+  border: 0;
+  outline: none;
+  background: var(--bg-editor);
+  color: var(--text-main);
   resize: vertical;
 }
 
-textarea,
-pre {
-  font: 14px/1.5 Consolas, monospace;
-  font-variant-ligatures: none;
-  tab-size: 4;
-}
-
 textarea::placeholder {
-  color: #a6a8ae;
-}
-
-/* A camada colorida fica atrás do campo; só o textarea recebe edição e foco. */
-.editor-codigo {
-  position: relative;
+  color: #4b5263;
 }
 
 .editor-codigo .camada-destaque {
   display: none;
   position: absolute;
   inset: 0;
-  max-height: none;
   margin: 0;
-  padding: 14px;
-  border: 1px solid transparent;
-  border-radius: 5px;
+  padding: 16px;
+  border: 0;
   overflow: hidden;
   color: #eee;
   white-space: pre;
@@ -95,59 +345,169 @@ textarea::placeholder {
   position: relative;
   background: transparent;
   color: transparent;
-  caret-color: #eee;
+  caret-color: #fff;
 }
 
 .editor-codigo.com-destaque textarea::selection {
   color: transparent;
-  background: rgb(90 140 220 / 35%);
+  background: rgba(56, 139, 253, 0.35);
 }
 
-.acoes {
+/* Barra de Status do Editor */
+.editor-statusbar {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-subtle);
+  padding: 6px 14px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-family: var(--font-code);
+}
+
+.status-left,
+.status-right {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  margin: 16px 0;
 }
 
-button {
-  padding: 12px 20px;
-  border: 0;
-  border-radius: 5px;
-  background: #bc2336;
+.divisor {
+  color: var(--border-subtle);
+}
+
+kbd {
+  display: inline-block;
+  padding: 1px 4px;
+  font-family: inherit;
+  font-size: 0.72rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  color: var(--text-main);
+}
+
+.texto-ajuda {
+  display: block;
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.texto-ajuda code {
+  color: var(--accent-blue);
+  font-family: var(--font-code);
+  font-size: 0.8rem;
+}
+
+/* 7. Botão Principal */
+.acoes-principais {
+  margin: 20px 0 24px;
+}
+
+.btn-primario {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 13px 24px;
+  background: var(--accent-primary);
   color: #fff;
-  font: bold 14px Arial, sans-serif;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(35, 134, 54, 0.4);
+  transition: var(--transicao);
 }
 
-button:hover {
-  background: #d02c42;
+.btn-primario:hover {
+  background: var(--accent-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(35, 134, 54, 0.5);
 }
 
-textarea:focus-visible,
-button:focus-visible,
-summary:focus-visible,
-pre:focus-visible {
-  outline: 3px solid #ffd166;
-  outline-offset: 4px;
+.btn-primario:active {
+  transform: translateY(0);
 }
 
-
-/* 3. Resultado e estados da análise */
+/* 8. Painel de Resultados */
 .resultado {
-  margin-top: 26px;
-  padding: 24px 20px;
-  border: 1px solid #62656b;
-  border-radius: 5px;
-  background: #2a2b2f;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--neutro-border);
+  background: var(--neutro-bg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transicao);
+}
+
+.resultado-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-icone {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--neutro-text);
+}
+
+.resultado h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
 }
 
 .resultado p {
-  margin: 0;
+  margin: 2px 0 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
 }
 
-.resultado ul {
-  margin: 12px 0 0;
-  padding-left: 20px;
+/* Estados da Análise */
+.resultado.sucesso {
+  border-color: var(--sucesso-border);
+  background: var(--sucesso-bg);
+}
+
+.resultado.sucesso .status-icone {
+  background: var(--sucesso-text);
+  box-shadow: 0 0 10px var(--sucesso-text);
+}
+
+.resultado.sucesso p {
+  color: var(--sucesso-text);
+  font-weight: 500;
+}
+
+.resultado.erro {
+  border-color: var(--erro-border);
+  background: var(--erro-bg);
+}
+
+.resultado.erro .status-icone {
+  background: var(--erro-text);
+  box-shadow: 0 0 10px var(--erro-text);
+}
+
+.resultado.erro p {
+  color: var(--erro-text);
+  font-weight: 500;
+}
+
+/* Lista de Erros e Indicadores */
+.lista-erros {
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
 }
 
 .resultado li {
@@ -156,88 +516,202 @@ pre:focus-visible {
 
 .resultado li + li {
   margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed rgba(248, 81, 73, 0.25);
 }
 
 .resultado li p {
-  margin: 0;
+  font-size: 0.92rem;
+  color: var(--text-main);
+  font-weight: 500;
 }
 
-/* Mostra uma cópia da linha analisada e a seta exatamente sob o caractere problemático. */
+/* Snippet de Código com a Seta */
 .localizacao-erro {
-  margin: 8px 0 0;
-  padding: 10px 12px;
+  margin: 10px 0 0;
+  padding: 12px 14px;
   overflow-x: auto;
-  border-left: 3px solid #ff7b85;
-  border-radius: 0 4px 4px 0;
-  background: #24191b;
-  color: #ffe1e3;
+  border-left: 3px solid var(--erro-text);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--erro-highlight);
+  color: #ffccd0;
+  font-family: var(--font-code);
+  font-size: 0.84rem;
+  line-height: 1.5;
 }
 
-.resultado.sucesso {
-  border-color: #3d8c5a;
-  background: #203d2b;
+.localizacao-erro code {
+  font-family: inherit;
 }
 
-.resultado.erro {
-  border-color: #c8424b;
-  background: #412328;
+/* 9. Classes de Cores da Sintaxe */
+.palavra-reservada { color: var(--cor-palavra); font-weight: 600; }
+.identificador    { color: var(--cor-identificador); }
+.string           { color: var(--cor-string); }
+.numero           { color: var(--cor-numero); }
+.booleano         { color: var(--cor-booleano); font-weight: 600; }
+
+/* 10. Seção Acadêmica e Cards Expansíveis */
+.secao-academica {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-
-/* 4. Destaque e código de apoio à apresentação */
-details {
-  margin-top: 24px;
+.card-expansivel {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  overflow: hidden;
+  transition: var(--transicao);
 }
 
-summary {
+.card-expansivel summary {
+  padding: 14px 18px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-main);
   cursor: pointer;
-  font-weight: bold;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  user-select: none;
+  background: var(--bg-card);
+}
+
+.card-expansivel summary::-webkit-details-marker {
+  display: none;
+}
+
+.icone-chevron {
+  display: inline-block;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  transition: transform var(--transicao);
+  transform-origin: center;
+}
+
+.card-expansivel[open] .icone-chevron {
+  transform: rotate(90deg);
+  color: var(--accent-blue);
+}
+
+.card-expansivel[open] summary {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.detalhe-conteudo {
+  padding: 18px;
+  background: var(--bg-editor);
+}
+
+.detalhe-descricao {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 
 pre {
   max-height: 400px;
-  margin: 10px 0 0;
-  padding: 12px;
+  margin: 0;
+  padding: 14px;
   overflow: auto;
-  background: #1b1c20;
-  border-radius: 4px;
+  background: var(--bg-editor);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  color: #e6edf3;
 }
 
-pre code {
-  font: inherit;
+/* Grid Teórico */
+.teoria-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  background: var(--bg-card);
 }
 
-.palavra-reservada {
-  color: #ffd166;
+.card-teoria {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 14px;
 }
 
-.numero {
-  color: #93c5fd;
+.card-teoria h3 {
+  margin: 0 0 8px;
+  font-size: 0.88rem;
+  color: var(--accent-blue);
 }
 
-.string {
-  color: #86efac;
+.card-teoria p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
 }
 
-.booleano {
-  color: #c4b5fd;
+.card-teoria code {
+  color: var(--cor-palavra);
+  font-family: var(--font-code);
 }
 
-.identificador {
-  color: #f9a8d4;
+/* 11. Rodapé */
+.app-footer {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-subtle);
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-dim);
 }
 
-.observacao {
-  margin-top: 20px;
-  font-size: 0.85rem;
+/* 12. Acessibilidade e Foco */
+button:focus-visible,
+summary:focus-visible,
+textarea:focus-visible,
+pre:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
 }
 
-
-/* 5. Ajustes para celular */
-@media (max-width: 600px) {
-  main {
-    margin: 0;
-    min-height: 100vh;
-    padding: 28px 20px;
+/* 13. Responsividade */
+@media (max-width: 640px) {
+  .app-header {
+    padding: 18px 16px;
+  }
+  
+  .main-content {
+    padding: 0 14px 40px;
+  }
+  
+  .brand {
+    gap: 12px;
+  }
+  
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+  }
+  
+  h1 {
+    font-size: 1.35rem;
+  }
+  
+  .editor-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .editor-acoes-rapidas {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .editor-statusbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 }
