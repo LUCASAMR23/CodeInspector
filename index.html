@@ -136,9 +136,9 @@
           <div class="card-teoria-destaque">
             <div class="teoria-card-header">
               <span class="numero-passo">02</span>
-              <h3>Por que não Fila ou Contador?</h3>
+              <h3>Tratamento Léxico</h3>
             </div>
-            <p>Contadores falham em casos como <code>([)]</code> — a contagem bate, mas o aninhamento está invertido. Uma fila atende em FIFO, violando a hierarquia. Só a Pilha detecta aninhamento incorreto.</p>
+            <p>Delimitadores dentro de comentários e strings são mascarados. Se um trecho estiver sem fechamento, o analisador informa o erro e continua nas próximas linhas quando possível, incluindo as aberturas pendentes.</p>
           </div>
 
           <div class="card-teoria-destaque">
@@ -146,15 +146,15 @@
               <span class="numero-passo">03</span>
               <h3>Complexidade Algorítmica</h3>
             </div>
-            <p>Varredura linear em <strong>tempo $O(n)$</strong> em uma única passagem. O consumo de espaço é <strong>$O(n)$ no pior caso</strong> e a ordenação final da lista de erros é <strong>$O(e \log e)$</strong>.</p>
+            <p>Varredura linear em <strong>tempo O(n)</strong> em uma única passagem. O consumo de espaço é <strong>O(n) no pior caso</strong> e a ordenação final da lista de erros é <strong>O(e log e)</strong>.</p>
           </div>
 
           <div class="card-teoria-destaque">
             <div class="teoria-card-header">
               <span class="numero-passo">04</span>
-              <h3>Tratamento Léxico</h3>
+              <h3>Por que não Fila ou Contador?</h3>
             </div>
-            <p>Delimitadores dentro de comentários ou strings fechadas são mascarados. Se uma string estiver aberta sem fechamento, o analisador acusa o erro na aspa e para, evitando erros em cascata.</p>
+            <p>Contadores falham em casos como <code>([)]</code> — a contagem bate, mas o aninhamento está invertido. Uma fila atende em FIFO, violando a hierarquia. Só a Pilha detecta aninhamento incorreto.</p>
           </div>
         </div>
 
@@ -214,7 +214,7 @@
             </div>
             <div>
               <h2>Código do Algoritmo com Pilha</h2>
-              <p class="secao-descricao">Implementação em JavaScript do analisador sintático de delimitadores e cálculo de posições em $O(n)$.</p>
+              <p class="secao-descricao">Implementação em JavaScript do analisador sintático de delimitadores e cálculo de posições em O(n).</p>
             </div>
           </div>
           <button id="botao-copiar-algoritmo" type="button" class="btn-subtle" title="Copiar código do algoritmo">
