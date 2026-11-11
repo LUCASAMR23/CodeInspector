@@ -28,7 +28,7 @@ function lerTexto(no) {
 
 const elementos = {};
 for (const id of ["codigo", "botao-analisar", "painel-resultado", "resumo-resultado",
-  "lista-erros", "editor-codigo", "camada-destaque", "codigo-destacado", "codigo-analise"]) {
+  "lista-erros", "editor-codigo", "camada-destaque", "codigo-destacado", "codigo-analise", "codigo-analise-erros"]) {
   elementos[id] = criarNo();
 }
 

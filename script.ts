@@ -499,7 +499,7 @@ function configurarCopia(botao: HTMLElement | null, obterTexto: () => string): v
   });
 }
 
-function renderizarAlgoritmoDestacado(codigo: string): void {
+function renderizarAlgoritmoDestacado(codigo: string, destino: HTMLElement = codigoAnalise): void {
   // Tokeniza o texto inteiro antes de separar linhas: preserva comentários
   // e strings que ocupam mais de uma linha.
   const destaque = criarDestaque(codigo);
@@ -527,7 +527,7 @@ function renderizarAlgoritmoDestacado(codigo: string): void {
       conteudo.append(trecho);
     });
   }
-  codigoAnalise.replaceChildren(fragmento);
+  destino.replaceChildren(fragmento);
 }
 
 configurarCopia(botaoCopiar, () => campoCodigo.value);
@@ -536,15 +536,55 @@ configurarCopia(botaoCopiarAlgoritmo, () => textoCodigoAlgoritmo);
 atualizarEditor();
 editorCodigo.classList.add("com-destaque");
 
-textoCodigoAlgoritmo = [
-  "// Validador de delimitadores: pilha LIFO; não é um compilador completo.",
-  `const pares = ${JSON.stringify(pares)};`,
-  `const padraoTextos = ${padraoTextos};`,
-  ignorarStringsEComentarios.toString(),
-  formatarPosicao.toString(),
-  criarIndicadorErro.toString(),
-  stringEstaFechada.toString(),
-  encontrarStringIncompleta.toString(),
-  analisarCodigo.toString()
-].join("\n\n");
-renderizarAlgoritmoDestacado(textoCodigoAlgoritmo);
+const codigoSucesso = `function verificarPares(codigoLimpo) {
+  const pares = { "(": ")", "[": "]", "{": "}" };
+  const caracteres = Array.from(codigoLimpo);
+  const pilha = [];
+
+  for (const caractere of caracteres) {
+    if (pares[caractere]) {
+      pilha.push(caractere);
+    } else if (")]}".includes(caractere)) {
+      const abertura = pilha.pop();
+      if (!abertura || caractere !== pares[abertura]) return false;
+    }
+  }
+
+  if (pilha.length === 0) {
+    return { sucesso: true, mensagem: "Todos os pares estão corretos." };
+  }
+  return false;
+}`;
+
+const codigoErro = `function encontrarErros(codigoLimpo) {
+  const pares = { "(": ")", "[": "]", "{": "}" };
+  const caracteres = Array.from(codigoLimpo);
+  const pilha = [];
+  const erros = [];
+
+  for (const caractere of caracteres) {
+    if (pares[caractere]) {
+      pilha.push(caractere);
+    } else if (")]}".includes(caractere)) {
+      const abertura = pilha.pop();
+      if (!abertura) {
+        erros.push("Fechamento sem abertura: " + caractere);
+      } else if (caractere !== pares[abertura]) {
+        erros.push("Fechamento incompatível: esperado " + pares[abertura]);
+      }
+    }
+  }
+
+  for (const abertura of pilha) {
+    erros.push("Abertura sem fechamento: " + abertura);
+  }
+
+  if (erros.length > 0) {
+    return { sucesso: false, erros };
+  }
+  return { sucesso: true, erros };
+}`;
+
+textoCodigoAlgoritmo = codigoSucesso + "\n\n" + codigoErro;
+renderizarAlgoritmoDestacado(codigoSucesso);
+renderizarAlgoritmoDestacado(codigoErro, obterElemento<HTMLElement>("codigo-analise-erros"));

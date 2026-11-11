@@ -577,6 +577,17 @@ kbd {
 .algoritmo-recolhivel[open] .rotulo-expandir,
 .algoritmo-recolhivel:not([open]) .rotulo-minimizar { display: none; }
 
+.titulo-validacao {
+  margin: 0;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.titulo-validacao-sucesso { color: var(--sucesso-text); }
+.titulo-validacao-erro { color: var(--erro-text); border-top: 1px solid var(--border-subtle); }
+
 /* Bloco Visualizador de Código Aberto */
 .visualizador-codigo {
   background: var(--bg-editor);
