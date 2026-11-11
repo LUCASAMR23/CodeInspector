@@ -12,6 +12,8 @@ function criarNo(texto = "") {
     scrollLeft: 0,
     classList: { add() {} },
     filhos: [],
+    get childNodes() { return this.filhos; },
+    cloneNode() { const no = criarNo(this.textContent); no.className = this.className; return no; },
     ouvintes: {},
     append(...filhos) { this.filhos.push(...filhos); },
     replaceChildren(...filhos) { this.filhos = filhos; },
@@ -122,7 +124,7 @@ function trechosColoridos(codigo) {
   elementos.codigo.ouvintes.input();
   verificar.equal(lerTexto(elementos["codigo-destacado"]), codigo + "\n ");
   return elementos["codigo-destacado"].filhos[0].filhos
-    .filter(no => no.className)
+    .filter(no => no.className && no.className !== "comentario")
     .map(no => [no.className, no.textContent]);
 }
 
@@ -214,7 +216,7 @@ verificar.deepEqual(trechosColoridos('""; \'\'; ``'), [
 const exemploStringIncompleta = exemploImagem.replace("[1, 2, 3)", '["fdsf]');
 const errosDaString = analisar(exemploStringIncompleta).erros;
 verificar.equal(errosDaString.length, 1);
-verificar.match(errosDaString[0].mensagem, /String sem fechamento em linha 2, coluna 22/);
+verificar.match(errosDaString[0].mensagem, /Texto ou comentário sem fechamento em linha 2, coluna 22/);
 
 const coresDaString = trechosColoridos(exemploStringIncompleta);
 verificar.deepEqual(coresDaString.filter(([classe]) => classe === "string"), []);
@@ -223,7 +225,7 @@ verificar.equal(analisar(exemploStringIncompleta.replace('["fdsf]', '["fdsf"]'))
 
 for (const codigo of ['"', "'", "`", String.raw`"aspa: \"`, '"texto\n', "'texto\r\n"]) {
   verificar.equal(analisar(codigo).erros.length, 1, codigo);
-  verificar.match(analisar(codigo).erros[0].mensagem, /String sem fechamento em linha 1, coluna 1/);
+  verificar.match(analisar(codigo).erros[0].mensagem, /Texto ou comentário sem fechamento em linha 1, coluna 1/);
 }
 
 elementos.codigo.scrollTop = 84;
