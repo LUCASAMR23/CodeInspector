@@ -50,6 +50,15 @@ ambiente.runInNewContext(
 
 const analisar = contexto.analisarCodigo;
 
+// O fechamento de comentário não pode reutilizar o asterisco da abertura.
+for (const codigo of ["/*", "/*/", "(/*/", "/*/\n]"]) {
+  const erros = analisar(codigo).erros;
+  verificar.ok(erros.some(erro => erro.mensagem.startsWith("Texto ou comentário sem fechamento")), codigo);
+}
+for (const codigo of ["/**/", "/***/", "/*/ */", "/*/\n*/ []"]) {
+  verificar.equal(analisar(codigo).erros.length, 0, codigo);
+}
+
 // Uma aspa dupla sem fechamento aparece no resultado abaixo do editor após a análise.
 const erroAspasAbertas = analisar('const texto = "sem fechamento');
 verificar.equal(erroAspasAbertas.erros.length, 1);
@@ -220,13 +229,19 @@ verificar.deepEqual(trechosColoridos('""; \'\'; ``'), [
   ["string", '""'], ["string", "''"], ["string", "``"]
 ]);
 
-// A aspa ausente da imagem não deve pintar as próximas linhas nem gerar erros em cascata.
+// A aspa ausente não pinta as próximas linhas nem interrompe os delimitadores.
 const exemploStringIncompleta = exemploImagem.replace("[1, 2, 3)", '["fdsf]');
 const errosDaString = analisar(exemploStringIncompleta).erros;
-verificar.equal(errosDaString.length, 1);
-verificar.match(errosDaString[0].mensagem, /Texto ou comentário sem fechamento em linha 2, coluna 22/);
+verificar.equal(errosDaString.length, 3);
+verificar.ok(errosDaString.some(erro => /Texto ou comentário sem fechamento em linha 2, coluna 22/.test(erro.mensagem)));
 
 const coresDaString = trechosColoridos(exemploStringIncompleta);
+const funcaoComErros = 'function testarAnalise() {\n  const numeros = [1, 2, 3);\n  const mensagem = "string sem fechamento;\n  if (numeros.length > 0) {\n    return true;\n  }\n';
+const errosRepetidos = analisar(funcaoComErros.repeat(2)).erros;
+verificar.equal(errosRepetidos.length, 6);
+verificar.equal(errosRepetidos.filter(erro => erro.mensagem.startsWith("Texto ou comentário")).length, 2);
+verificar.deepEqual(Array.from(errosRepetidos, erro => erro.linha), [1, 2, 3, 7, 8, 9]);
+verificar.equal(analisar('"incompleta\n]\n/* incompleto').erros.length, 3);
 verificar.deepEqual(coresDaString.filter(([classe]) => classe === "string"), []);
 verificar.ok(coresDaString.some(([classe, texto]) => classe === "palavra-reservada" && texto === "if"));
 verificar.equal(analisar(exemploStringIncompleta.replace('["fdsf]', '["fdsf"]')).erros.length, 0);

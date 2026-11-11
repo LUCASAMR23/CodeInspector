@@ -163,9 +163,9 @@ delimitadores sobrando, mas não é uma instrução válida de JavaScript.
   analisadas. Templates aninhados também exigiriam uma leitura léxica mais completa.
 - Strings com aspas simples ou duplas terminam na quebra de linha, exceto quando
   a quebra é escapada com barra invertida. Crases permitem múltiplas linhas.
-- Uma string sem fechamento é apontada na posição da aspa de abertura. Nesse
-  ponto, a análise para sem listar aberturas pendentes, evitando avisos derivados
-  da string incompleta. O destaque nas linhas seguintes continua normalmente.
+- Uma string sem fechamento é apontada na posição da aspa de abertura. A análise
+  continua nas próximas linhas e lista também as aberturas pendentes. Em código
+  malformado, alguns avisos podem ser consequência de erros anteriores.
 - Comentários de bloco incompletos ainda podem ser ignorados até o fim do texto.
 - Colunas usam posições UTF-16, como os índices das strings JavaScript. Uma
   tabulação conta como uma posição e um emoji pode ocupar duas. Quebras LF,

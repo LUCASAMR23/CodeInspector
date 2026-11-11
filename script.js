@@ -77,21 +77,22 @@ function stringEstaFechada(texto) {
     }
     return barras % 2 === 0;
 }
-function encontrarStringIncompleta(codigo) {
+function* encontrarStringIncompleta(codigo) {
     for (const trecho of codigo.matchAll(padraoTextos)) {
         const texto = trecho[0];
         const aspas = texto[0];
-        if (texto.startsWith("/*") && !texto.endsWith("*/")) {
-            return { indice: trecho.index, esperado: "*/" };
+        if (texto.startsWith("/*") && (texto.length < 4 || !texto.endsWith("*/"))) {
+            yield { indice: trecho.index, esperado: "*/" };
         }
         if (['"', "'", "`"].includes(aspas) && !stringEstaFechada(texto)) {
-            return { indice: trecho.index, esperado: aspas };
+            yield { indice: trecho.index, esperado: aspas };
         }
     }
 }
 // 5. Análise com pilha: independente dos elementos da página
 function analisarCodigo(codigo) {
-    const stringIncompleta = encontrarStringIncompleta(codigo);
+    const stringsIncompletas = encontrarStringIncompleta(codigo);
+    let stringIncompleta = stringsIncompletas.next().value;
     const codigoLimpo = ignorarStringsEComentarios(codigo);
     const pilha = [];
     const erros = [];
@@ -112,13 +113,13 @@ function analisarCodigo(codigo) {
         if (stringIncompleta && indice === stringIncompleta.indice) {
             erros.push({
                 mensagem: `Texto ou comentário sem fechamento em ${formatarPosicao({ linha, coluna })}. `
-                    + `Esperado “${stringIncompleta.esperado}”. Corrija o trecho para continuar a análise.`,
+                    + `Esperado “${stringIncompleta.esperado}”.`,
                 indice,
                 linha,
                 coluna
             });
-            // Os delimitadores seguintes podem pertencer ao texto da string incompleta.
-            return { erros, codigoLimpo };
+            // O trecho incompleto já foi mascarado; continue nas próximas linhas.
+            stringIncompleta = stringsIncompletas.next().value;
         }
         if (pares[caractere]) {
             pilha.push({ simbolo: caractere, indice, linha, coluna });

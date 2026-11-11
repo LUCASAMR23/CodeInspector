@@ -561,6 +561,22 @@ kbd {
   color: var(--text-muted);
 }
 
+.controle-algoritmo {
+  width: fit-content;
+  padding: 8px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  background: var(--bg-surface);
+  cursor: pointer;
+}
+
+.controle-algoritmo:hover { border-color: var(--accent-blue); }
+.controle-algoritmo:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 3px; }
+.algoritmo-recolhivel[open] > summary { margin-bottom: 16px; }
+.algoritmo-recolhivel[open] .rotulo-expandir,
+.algoritmo-recolhivel:not([open]) .rotulo-minimizar { display: none; }
+
 /* Bloco Visualizador de Código Aberto */
 .visualizador-codigo {
   background: var(--bg-editor);

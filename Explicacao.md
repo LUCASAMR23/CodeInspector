@@ -94,9 +94,9 @@ Quando alguém usa a página, acontece isto:
 No arquivo script.ts:
 
 ~~~text
-Linha 438: escuta o clique no botão.
-Linha 390: começa a função que mostra o resultado.
-Linha 401: chama a função que realmente analisa o código.
+Linha 439: escuta o clique no botão.
+Linha 391: começa a função que mostra o resultado.
+Linha 402: chama a função que realmente analisa o código.
 Linha 151: começa a função principal da pilha.
 ~~~
 
@@ -234,8 +234,8 @@ Se abriu { , precisa fechar }
 
 Essa tabela é usada em dois momentos muito importantes:
 
-1. Linha 186: descobrir se um caractere é abertura.
-2. Linha 205: descobrir se o fechamento encontrado é o correto.
+1. Linha 187: descobrir se um caractere é abertura.
+2. Linha 206: descobrir se o fechamento encontrado é o correto.
 
 ## Parte 4: ignorar textos e comentários — linhas 61 e 94 a 97
 
@@ -280,11 +280,12 @@ Depois:  const x =    ;
 
 A chave fica fora da análise, mas as colunas do restante continuam iguais.
 
-## Parte 5: começar a análise — linhas 151 a 157
+## Parte 5: começar a análise — linhas 151 a 158
 
 ~~~ts
 function analisarCodigo(codigo: string): Analise {
-  const stringIncompleta = encontrarStringIncompleta(codigo);
+  const stringsIncompletas = encontrarStringIncompleta(codigo);
+  let stringIncompleta = stringsIncompletas.next().value;
   const codigoLimpo = ignorarStringsEComentarios(codigo);
   const pilha: DelimitadorAberto[] = [];
   const erros: Erro[] = [];
@@ -299,13 +300,13 @@ Vamos entender uma linha de cada vez:
 |---:|---|
 | 151 | Cria a função que fará a análise |
 | 152 | Procura strings ou comentários sem fechamento |
-| 153 | Faz uma cópia do código sem strings e comentários |
-| 154 | Cria a pilha vazia |
-| 155 | Cria a lista vazia de erros |
-| 156 | Começa a contar pela linha 1 |
-| 157 | Começa a contar pela coluna 0 |
+| 154 | Faz uma cópia do código sem strings e comentários |
+| 155 | Cria a pilha vazia |
+| 156 | Cria a lista vazia de erros |
+| 157 | Começa a contar pela linha 1 |
+| 158 | Começa a contar pela coluna 0 |
 
-## Parte 6: ler o código letra por letra — linhas 159 a 193
+## Parte 6: ler o código letra por letra — linhas 160 a 194
 
 ~~~ts
 for (let indice = 0; indice < codigoLimpo.length; indice++) {
@@ -325,7 +326,7 @@ posição: 0 1 2 3
 - caractere: símbolo que está sendo visto agora;
 - coluna: posição dentro da linha.
 
-### Quando encontra uma nova linha — linhas 163 a 172
+### Quando encontra uma nova linha — linhas 164 a 173
 
 Se encontrar Enter, o programa:
 
@@ -335,9 +336,9 @@ Se encontrar Enter, o programa:
 
 Isso é necessário para a mensagem dizer exatamente onde está o problema.
 
-Nas linhas 174 a 184, um texto ou comentário incompleto gera um erro e encerra a análise para evitar avisos derivados desse trecho.
+Nas linhas 175 a 185, cada texto ou comentário incompleto gera um erro. A análise continua nas próximas linhas e verifica também as aberturas pendentes.
 
-## Parte 7: onde a abertura é colocada na pilha — linhas 186 a 189
+## Parte 7: onde a abertura é colocada na pilha — linhas 187 a 190
 
 ~~~ts
 if (pares[caractere]) {
@@ -348,13 +349,13 @@ if (pares[caractere]) {
 
 Esta é uma das partes mais importantes.
 
-A linha 186 pergunta: o caractere atual é uma chave dentro de pares? Se for, então ele é uma abertura:
+A linha 187 pergunta: o caractere atual é uma chave dentro de pares? Se for, então ele é uma abertura:
 
 ~~~text
 ( ou [ ou {
 ~~~
 
-A linha 187 usa push:
+A linha 188 usa push:
 
 ~~~ts
 pilha.push(...)
@@ -378,9 +379,9 @@ Encontra {
 Pilha fica: ( {
 ~~~
 
-O continue na linha 188 diz: esta abertura já foi tratada; não precisa verificar mais nada nela.
+O continue na linha 189 diz: esta abertura já foi tratada; não precisa verificar mais nada nela.
 
-## Parte 8: descobrir se o símbolo é fechamento — linhas 191 a 193
+## Parte 8: descobrir se o símbolo é fechamento — linhas 192 a 194
 
 ~~~ts
 if (!")]}".includes(caractere)) {
@@ -396,7 +397,7 @@ O caractere é ) ou ] ou }?
 
 Se não for, ele não tem relação com a pilha e é ignorado.
 
-## Parte 9: onde tira da pilha — linha 195
+## Parte 9: onde tira da pilha — linha 196
 
 ~~~ts
 const abertura = pilha.pop();
@@ -419,15 +420,15 @@ Porque [ foi o último a abrir. Portanto, ] precisa fechá-lo antes de qualquer 
 
 Se fosse retirada uma abertura antiga, como (, o código ficaria errado. É por isso que usamos pilha.
 
-## Parte 10: onde verifica se abriu e fechou certo — linhas 196 a 215
+## Parte 10: onde verifica se abriu e fechou certo — linhas 197 a 216
 
 ~~~ts
 const posicao = formatarPosicao({ linha, coluna });
 ~~~
 
-Linha 196 monta a posição do fechamento encontrado, por exemplo linha 4, coluna 7.
+Linha 197 monta a posição do fechamento encontrado, por exemplo linha 4, coluna 7.
 
-### Caso 1: não existe abertura — linhas 198 a 204
+### Caso 1: não existe abertura — linhas 199 a 205
 
 ~~~ts
 if (!abertura) {
@@ -446,9 +447,9 @@ Exemplo:
 }
 ~~~
 
-Não existe { antes dele. A linha 199 usa erros.push para guardar a mensagem.
+Não existe { antes dele. A linha 200 usa erros.push para guardar a mensagem.
 
-### Caso 2: abertura e fechamento diferentes — linhas 205 a 215
+### Caso 2: abertura e fechamento diferentes — linhas 206 a 216
 
 ~~~ts
 else if (caractere !== pares[abertura.simbolo]) {
@@ -497,14 +498,14 @@ Exemplo completo com erro:
    ) é igual ao fechamento esperado para [ ?
    Não. O esperado era ].
 
-5. A linha 207 guarda um erro na lista.
+5. A linha 208 guarda um erro na lista.
 ~~~
 
 ### Caso 3: par correto
 
 Se a abertura era [ e o símbolo atual é ], a comparação não encontra problema. Não adiciona erro porque o pop já retirou [ da pilha corretamente.
 
-## Parte 11: aberturas que ficaram sem fechar — linhas 218 a 226
+## Parte 11: aberturas que ficaram sem fechar — linhas 219 a 227
 
 Depois de ler o código inteiro, ainda podem sobrar itens na pilha.
 
@@ -531,33 +532,33 @@ Passo a passo:
 3. O código termina.
 4. Não apareceu }.
 5. { continua na pilha.
-6. A linha 219 cria o erro: falta }.
+6. A linha 220 cria o erro: falta }.
 ~~~
 
-Finalmente, as linhas 228 a 231 retornam o código limpo e os erros ordenados pela posição em que aparecem no código.
+Finalmente, as linhas 229 a 232 retornam o código limpo e os erros ordenados pela posição em que aparecem no código.
 
-## Parte 12: mostrar o código colorido — linhas 236 a 357
+## Parte 12: mostrar o código colorido — linhas 237 a 358
 
 Essa parte não muda a análise da pilha. Ela existe só para facilitar a leitura.
 
 | Linhas | O que fazem |
 |---:|---|
-| 236 a 321 | Reconhecem nomes definidos e suas referências |
-| 327 | Procuram textos, números e palavras |
-| 329 a 335 | Escolhem a cor de cada trecho |
-| 336 e 343 | Adicionam texto normal |
-| 337 a 340 | Criam um trecho colorido |
-| 339 | Usam textContent, que mostra o código como texto seguro |
-| 347 a 352 | Aplicam o destaque reutilizável ao editor |
-| 354 a 357 | Mantêm o destaque na mesma rolagem da caixa de texto |
+| 237 a 322 | Reconhecem nomes definidos e suas referências |
+| 328 | Procuram textos, números e palavras |
+| 330 a 336 | Escolhem a cor de cada trecho |
+| 337 e 344 | Adicionam texto normal |
+| 338 a 341 | Criam um trecho colorido |
+| 340 | Usam textContent, que mostra o código como texto seguro |
+| 348 a 353 | Aplicam o destaque reutilizável ao editor |
+| 355 a 358 | Mantêm o destaque na mesma rolagem da caixa de texto |
 
-## Parte 13: mostrar resultados — linhas 375 a 435
+## Parte 13: mostrar resultados — linhas 376 a 436
 
-### Limpar resultado — linhas 375 a 380
+### Limpar resultado — linhas 376 a 381
 
 Antes de digitar ou analisar de novo, limparResultado apaga erros antigos e escreve Aguardando análise.
 
-### Ao digitar — linhas 382 a 388
+### Ao digitar — linhas 383 a 389
 
 atualizarEditor é chamada enquanto a pessoa digita:
 
@@ -570,18 +571,18 @@ Atualiza os contadores de linhas e caracteres
 
 Ela ainda não faz a análise, apenas prepara a tela.
 
-### Ao clicar no botão — linhas 390 a 435
+### Ao clicar no botão — linhas 391 a 436
 
 mostrarResultado faz o trabalho final:
 
-1. Linha 391: pega o texto digitado.
-2. Linha 394: verifica se o campo está vazio.
-3. Linha 401: chama analisarCodigo, onde está a pilha.
-4. Linha 404: deixa o painel vermelho se há erro ou verde se não há.
-5. Linhas 406 a 409: mostra sucesso se a lista estiver vazia.
-6. Linhas 415 a 432: cria um item na tela para cada erro encontrado, com a linha e uma seta indicando o local.
+1. Linha 392: pega o texto digitado.
+2. Linha 395: verifica se o campo está vazio.
+3. Linha 402: chama analisarCodigo, onde está a pilha.
+4. Linha 405: deixa o painel vermelho se há erro ou verde se não há.
+5. Linhas 407 a 410: mostra sucesso se a lista estiver vazia.
+6. Linhas 416 a 433: cria um item na tela para cada erro encontrado, com a linha e uma seta indicando o local.
 
-## Parte 14: eventos e apresentação — linhas 437 a 549
+## Parte 14: eventos e apresentação — linhas 438 a 550
 
 ~~~ts
 botaoAnalisar.addEventListener("click", mostrarResultado);
@@ -591,24 +592,24 @@ campoCodigo.addEventListener("scroll", sincronizarRolagem);
 
 Essas linhas dizem quando cada função deve acontecer:
 
-- linha 438: clicou no botão, analisa;
-- linha 439: digitou, atualiza o editor;
-- linha 440: rolou o texto, alinha o destaque;
-- linhas 443 a 448: analisam com Ctrl+Enter ou Cmd+Enter;
-- linhas 457 a 473: carregam exemplos ou limpam o editor;
-- linhas 477 a 499: configuram a cópia segura, ativada nas linhas 532 e 533;
-- linhas 501 a 530: apresentam o algoritmo reutilizando criarDestaque;
-- linhas 535 e 536: iniciam o editor quando a página abre;
-- linhas 538 a 549: montam e mostram os trechos de código ligados à análise.
+- linha 439: clicou no botão, analisa;
+- linha 440: digitou, atualiza o editor;
+- linha 441: rolou o texto, alinha o destaque;
+- linhas 444 a 449: analisam com Ctrl+Enter ou Cmd+Enter;
+- linhas 458 a 474: carregam exemplos ou limpam o editor;
+- linhas 478 a 500: configuram a cópia segura, ativada nas linhas 533 e 534;
+- linhas 502 a 531: apresentam o algoritmo reutilizando criarDestaque;
+- linhas 536 e 537: iniciam o editor quando a página abre;
+- linhas 539 a 550: montam e mostram os trechos de código ligados à análise.
 
 ## Resumo para decorar
 
 | Pergunta | Resposta no código |
 |---|---|
-| Onde cria a pilha? | Linha 154 |
-| Onde adiciona abertura? | Linha 187: pilha.push |
-| Onde retira abertura? | Linha 195: pilha.pop |
-| Onde compara se está correto? | Linha 205 |
-| Onde guarda erro de fechamento sem abertura? | Linha 199 |
-| Onde guarda erro de abertura sem fechamento? | Linha 219 |
+| Onde cria a pilha? | Linha 155 |
+| Onde adiciona abertura? | Linha 188: pilha.push |
+| Onde retira abertura? | Linha 196: pilha.pop |
+| Onde compara se está correto? | Linha 206 |
+| Onde guarda erro de fechamento sem abertura? | Linha 200 |
+| Onde guarda erro de abertura sem fechamento? | Linha 220 |
 | Por que usa pilha? | Porque o último símbolo aberto deve ser o primeiro a fechar |
