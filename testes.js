@@ -50,6 +50,14 @@ ambiente.runInNewContext(
 
 const analisar = contexto.analisarCodigo;
 
+// Uma aspa dupla sem fechamento aparece no resultado abaixo do editor após a análise.
+const erroAspasAbertas = analisar('const texto = "sem fechamento');
+verificar.equal(erroAspasAbertas.erros.length, 1);
+verificar.match(erroAspasAbertas.erros[0].mensagem, /Texto ou comentário sem fechamento em linha 1, coluna 15/);
+verificar.ok(erroAspasAbertas.erros[0].mensagem.includes('Esperado “"”'));
+verificar.equal(analisar('// " comentário\nconst ok = [];').erros.length, 0);
+verificar.equal(analisar("const ok = 'aspas duplas: \"';").erros.length, 0);
+
 // Delimitadores dentro de strings, comentários e strings escapadas são ignorados.
 for (const codigo of [
   "({[]})",
