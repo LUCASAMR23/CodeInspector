@@ -26,7 +26,7 @@ interface IndicadorErro {
 
 interface StringIncompleta {
   indice: number;
-  aspas: string;
+  esperado: string;
 }
 
 interface NomesDefinidos {
@@ -55,7 +55,6 @@ const editorCodigo = obterElemento<HTMLElement>("editor-codigo");
 const camadaDestaque = obterElemento<HTMLPreElement>("camada-destaque");
 const codigoDestacado = obterElemento<HTMLElement>("codigo-destacado");
 const codigoAnalise = obterElemento<HTMLElement>("codigo-analise");
-
 
 // 3. Pares de delimitadores, padrões compilados e regras de destaque
 const pares: Record<string, string> = { "(": ")", "[": "]", "{": "}" };
@@ -88,9 +87,10 @@ const padraoParametrosFuncao = new RegExp(
 const padraoMetodos = new RegExp(`(${padraoNomeIdentificador})\\s*\\(([^()]*)\\)\\s*\\{`, "gu");
 const padraoCampos = new RegExp(`(?:[{,]\\s*(${padraoNomeIdentificador})\\s*:)|(?:[{;]\\s*(${padraoNomeIdentificador})\\s*=)`, "gu");
 
-
 // 4. Preparação do texto, posições e indicador visual
-// shortcut: regex e expressões em crases exigem leitura léxica mais completa; ampliar se forem usadas.
+// Escopo: delimitadores, strings e comentários comuns.
+// Literais /regex/ e interpolações ${...} em crases exigem um parser.
+// Esta análise não valida toda a sintaxe de JavaScript/TypeScript.
 function ignorarStringsEComentarios(codigo: string): string {
   // Espaços mantêm os índices originais; quebras mantêm as linhas originais.
   return codigo.replace(padraoTextos, trecho => trecho.replace(/[^\r\n\u2028\u2029]/g, " "));
@@ -138,12 +138,14 @@ function encontrarStringIncompleta(codigo: string): StringIncompleta | undefined
     const texto = trecho[0];
     const aspas = texto[0];
 
+    if (texto.startsWith("/*") && !texto.endsWith("*/")) {
+      return { indice: trecho.index, esperado: "*/" };
+    }
     if (['"', "'", "`"].includes(aspas) && !stringEstaFechada(texto)) {
-      return { indice: trecho.index, aspas };
+      return { indice: trecho.index, esperado: aspas };
     }
   }
 }
-
 
 // 5. Análise com pilha: independente dos elementos da página
 function analisarCodigo(codigo: string): Analise {
@@ -171,8 +173,8 @@ function analisarCodigo(codigo: string): Analise {
 
     if (stringIncompleta && indice === stringIncompleta.indice) {
       erros.push({
-        mensagem: `String sem fechamento em ${formatarPosicao({ linha, coluna })}. `
-          + `Esperado “${stringIncompleta.aspas}”. Corrija a string para continuar a análise.`,
+        mensagem: `Texto ou comentário sem fechamento em ${formatarPosicao({ linha, coluna })}. `
+          + `Esperado “${stringIncompleta.esperado}”. Corrija o trecho para continuar a análise.`,
         indice,
         linha,
         coluna
@@ -229,7 +231,6 @@ function analisarCodigo(codigo: string): Analise {
   };
 }
 
-
 // 6. Destaque no próprio campo: texto digitado nunca é interpretado como HTML
 // shortcut: reconhecimento de declarações usuais; usar um parser se precisar resolver escopos completos.
 function encontrarNomesDefinidos(codigo: string, codigoLimpoPreexistente?: string): NomesDefinidos {
@@ -241,7 +242,10 @@ function encontrarNomesDefinidos(codigo: string, codigoLimpoPreexistente?: strin
     const vinculos = texto.trim().replace(/^[{\[]|[}\]]$/g, "");
 
     for (const parte of vinculos.split(",")) {
-      const vinculo = (parte.split("=")[0].split(":").pop() ?? "").trim();
+      // Em declarações simples, o trecho após ':' é o tipo, não o nome.
+      const semValor = parte.split("=")[0];
+      const vinculo = (texto.trim().startsWith("{")
+        ? semValor.split(":").pop() ?? "" : semValor.split(":")[0]).trim();
       const encontrado = vinculo.match(padraoInicioNome);
       if (encontrado && !palavrasReservadas.has(encontrado[1])) {
         nomes.add(encontrado[1]);
@@ -316,44 +320,35 @@ function nomeFoiDefinido(texto: string, indice: number, definidos: NomesDefinido
   return definidos.propriedades.has(texto) && (definidos.nomes.has(dono) || dono === "this");
 }
 
-function destacarCodigo(codigo: string, codigoLimpoPreexistente?: string): void {
+// Compartilha o destaque entre o editor e a apresentação do algoritmo.
+function criarDestaque(codigo: string, definidos?: NomesDefinidos): DocumentFragment {
   const fragmento = document.createDocumentFragment();
-  const definidos = encontrarNomesDefinidos(codigo, codigoLimpoPreexistente);
   let inicio = 0;
-
   for (const trecho of codigo.matchAll(padraoDestaques)) {
     const texto = trecho[0];
-    let classe = "";
-
-    if (/^["'`]/.test(texto)) {
-      classe = stringEstaFechada(texto) ? "string" : "";
-    } else if (/^(?:\d|\.\d)/.test(texto)) {
-      classe = "numero";
-    } else if (texto === "true" || texto === "false") {
-      classe = "booleano";
-    } else if (palavrasReservadas.has(texto)) {
-      classe = "palavra-reservada";
-    } else if (nomeFoiDefinido(texto, trecho.index, definidos)) {
-      classe = "identificador";
-    }
-
-    if (!classe) {
-      continue;
-    }
-
+    const classe = /^(?:\/\/|\/\*)/.test(texto) ? "comentario"
+      : /^["'`]/.test(texto) ? (stringEstaFechada(texto) ? "string" : "")
+      : /^(?:\d|\.\d)/.test(texto) ? "numero"
+      : /^(?:true|false)$/.test(texto) ? "booleano"
+      : palavrasReservadas.has(texto) ? "palavra-reservada"
+      : (definidos ? nomeFoiDefinido(texto, trecho.index, definidos)
+        : new RegExp(`^${padraoNomeIdentificador}$`, "u").test(texto)) ? "identificador" : "";
     fragmento.append(document.createTextNode(codigo.slice(inicio, trecho.index)));
-
-    const destaque = document.createElement("span");
-    destaque.className = classe;
-    destaque.textContent = texto;
-    fragmento.append(destaque);
-
+    const span = document.createElement("span");
+    span.className = classe;
+    span.textContent = texto;
+    fragmento.append(span);
     inicio = trecho.index + texto.length;
   }
+  fragmento.append(document.createTextNode(codigo.slice(inicio)));
+  return fragmento;
+}
 
-  // A linha extra permite alinhar a rolagem até o fim, inclusive após Enter.
-  fragmento.append(document.createTextNode(codigo.slice(inicio) + "\n "));
-  codigoDestacado.replaceChildren(fragmento);
+function destacarCodigo(codigo: string, codigoLimpo?: string): void {
+  codigoDestacado.replaceChildren(
+    criarDestaque(codigo, encontrarNomesDefinidos(codigo, codigoLimpo)),
+    document.createTextNode("\n ")
+  );
 }
 
 function sincronizarRolagem(): void {
@@ -367,7 +362,7 @@ function atualizarEstatisticas(): void {
   const codigo = campoCodigo.value;
 
   if (contadorLinhas) {
-    const totalLinhas = codigo ? codigo.split(/\r\n|\r|\n/).length : 1;
+    const totalLinhas = codigo ? codigo.split(/\r\n|[\r\n\u2028\u2029]/).length : 1;
     contadorLinhas.textContent = `${totalLinhas} ${totalLinhas === 1 ? "linha" : "linhas"}`;
   }
 
@@ -375,7 +370,6 @@ function atualizarEstatisticas(): void {
     contadorCaracteres.textContent = `${codigo.length} caracteres`;
   }
 }
-
 
 // 7. Exibição do resultado e limpeza ao editar
 function limparResultado(): void {
@@ -440,7 +434,6 @@ function mostrarResultado(): void {
   listaErros.hidden = false;
 }
 
-
 // 8. Eventos e código disponível para explicar durante a apresentação
 botaoAnalisar.addEventListener("click", mostrarResultado);
 campoCodigo.addEventListener("input", atualizarEditor);
@@ -461,151 +454,96 @@ const botaoLimpar = document.getElementById("botao-limpar");
 const botaoCopiar = document.getElementById("botao-copiar");
 const botaoCopiarAlgoritmo = document.getElementById("botao-copiar-algoritmo");
 
-if (botaoExemploSucesso) {
-  botaoExemploSucesso.addEventListener("click", () => {
+botaoExemploSucesso?.addEventListener("click", () => {
     campoCodigo.value = `// Código JavaScript válido para apresentação\nfunction calcularDesconto(valor, taxa) {\n  const valido = true;\n  if (valor > 100 && valido) {\n    return valor * (1 - taxa);\n  }\n  return valor;\n}\n\nconst total = calcularDesconto(250, 0.15);\nconsole.log("Total final:", total);`;
     atualizarEditor();
     mostrarResultado();
-  });
-}
+});
 
-if (botaoExemploErro) {
-  botaoExemploErro.addEventListener("click", () => {
+botaoExemploErro?.addEventListener("click", () => {
     campoCodigo.value = `// Demonstração de erros de delimitadores e strings\nfunction testarAnalise() {\n  const numeros = [1, 2, 3);\n  const mensagem = "string sem fechamento;\n  if (numeros.length > 0) {\n    return true;\n  }\n`;
     atualizarEditor();
     mostrarResultado();
-  });
-}
+});
 
-if (botaoLimpar) {
-  botaoLimpar.addEventListener("click", () => {
+botaoLimpar?.addEventListener("click", () => {
     campoCodigo.value = "";
     atualizarEditor();
     campoCodigo.focus();
-  });
-}
-
-if (botaoCopiar) {
-  botaoCopiar.addEventListener("click", async () => {
-    if (!campoCodigo.value) return;
-    try {
-      await navigator.clipboard.writeText(campoCodigo.value);
-      const original = botaoCopiar.innerHTML;
-      botaoCopiar.textContent = "Copiado!";
-      setTimeout(() => { botaoCopiar.innerHTML = original; }, 1800);
-    } catch {}
-  });
-}
+});
 
 let textoCodigoAlgoritmo = "";
 
-function renderizarAlgoritmoDestacado(codigoTexto: string): void {
+function configurarCopia(botao: HTMLElement | null, obterTexto: () => string): void {
+  botao?.addEventListener("click", async () => {
+    const texto = obterTexto();
+    if (!texto) return;
+    // Evita que cliques sucessivos sobrescrevam o rótulo original.
+    const original = Array.from(botao.childNodes, no => no.cloneNode(true));
+    const desativado = botao.getAttribute("aria-disabled");
+    if (desativado === "true") return;
+    botao.setAttribute("aria-disabled", "true");
+    try {
+      await navigator.clipboard.writeText(texto);
+      botao.textContent = "Copiado!";
+    } catch {
+      botao.textContent = "Falha ao copiar";
+    } finally {
+      setTimeout(() => {
+        botao.replaceChildren(...original);
+        if (desativado === null) botao.removeAttribute("aria-disabled");
+        else botao.setAttribute("aria-disabled", desativado);
+      }, 1800);
+    }
+  });
+}
+
+function renderizarAlgoritmoDestacado(codigo: string): void {
+  // Tokeniza o texto inteiro antes de separar linhas: preserva comentários
+  // e strings que ocupam mais de uma linha.
+  const destaque = criarDestaque(codigo);
   const fragmento = document.createDocumentFragment();
-  const linhas = codigoTexto.split(/\r\n|\r|\n/);
-
-  for (let indice = 0; indice < linhas.length; indice++) {
-    const linhaTexto = linhas[indice];
-    const linhaEl = document.createElement("span");
-    linhaEl.className = "linha-codigo";
-
-    const numeroEl = document.createElement("span");
-    numeroEl.className = "numero-linha";
-    numeroEl.textContent = String(indice + 1);
-
-    const conteudoEl = document.createElement("span");
-    conteudoEl.className = "texto-linha";
-
-    let inicio = 0;
-    for (const trecho of linhaTexto.matchAll(padraoDestaques)) {
-      const texto = trecho[0];
-      let classe = "";
-
-      if (texto.startsWith("//") || texto.startsWith("/*")) {
-        classe = "comentario";
-      } else if (/^["'`]/.test(texto)) {
-        classe = stringEstaFechada(texto) ? "string" : "";
-      } else if (/^(?:\d|\.\d)/.test(texto)) {
-        classe = "numero";
-      } else if (texto === "true" || texto === "false" || texto === "null") {
-        classe = "booleano";
-      } else if (palavrasReservadas.has(texto)) {
-        classe = "palavra-reservada";
-      } else if (/^[a-zA-Z_$]/.test(texto)) {
-        classe = "identificador";
-      }
-
-      if (classe) {
-        if (trecho.index !== undefined && trecho.index > inicio) {
-          conteudoEl.append(document.createTextNode(linhaTexto.slice(inicio, trecho.index)));
-        }
-        const span = document.createElement("span");
-        span.className = classe;
-        span.textContent = texto;
-        conteudoEl.append(span);
-        inicio = (trecho.index ?? 0) + texto.length;
-      }
-    }
-
-    if (inicio < linhaTexto.length) {
-      conteudoEl.append(document.createTextNode(linhaTexto.slice(inicio)));
-    } else if (linhaTexto.length === 0) {
-      conteudoEl.append(document.createTextNode(" "));
-    }
-
-    linhaEl.append(numeroEl, conteudoEl);
-    fragmento.append(linhaEl);
+  let conteudo: HTMLElement;
+  let numero = 0;
+  function novaLinha(): void {
+    const linha = document.createElement("span");
+    linha.className = "linha-codigo";
+    const contador = document.createElement("span");
+    contador.className = "numero-linha";
+    contador.textContent = String(++numero);
+    conteudo = document.createElement("span");
+    conteudo.className = "texto-linha";
+    linha.append(contador, conteudo);
+    fragmento.append(linha);
   }
-
+  novaLinha();
+  for (const no of Array.from(destaque.childNodes)) {
+    const partes = (no.textContent ?? "").split(/\r\n|[\r\n\u2028\u2029]/);
+    partes.forEach((parte, indice) => {
+      if (indice) novaLinha();
+      const trecho = no.cloneNode(false);
+      trecho.textContent = parte;
+      conteudo.append(trecho);
+    });
+  }
   codigoAnalise.replaceChildren(fragmento);
 }
 
-if (botaoCopiarAlgoritmo) {
-  botaoCopiarAlgoritmo.addEventListener("click", async () => {
-    const textoParaCopiar = textoCodigoAlgoritmo || codigoAnalise.textContent;
-    if (!textoParaCopiar) return;
-    try {
-      await navigator.clipboard.writeText(textoParaCopiar);
-      const original = botaoCopiarAlgoritmo.innerHTML;
-      botaoCopiarAlgoritmo.textContent = "Copiado!";
-      setTimeout(() => { botaoCopiarAlgoritmo.innerHTML = original; }, 1800);
-    } catch {}
-  });
-}
+configurarCopia(botaoCopiar, () => campoCodigo.value);
+configurarCopia(botaoCopiarAlgoritmo, () => textoCodigoAlgoritmo);
 
 atualizarEditor();
 editorCodigo.classList.add("com-destaque");
 
-textoCodigoAlgoritmo = `// ============================================================================
-// 1. MAPEAMENTO DE DELIMITADORES & REGEX DE TRATAMENTO LÉXICO
-// ============================================================================
-const pares = ${JSON.stringify(pares, null, 2)};
-
-// Expressão regular compilada para mascarar strings e comentários.
-// Preserva espaços e quebras para que as posições (linha, coluna) originais fiquem intactas.
-const padraoTextos = ${padraoTextos};
-
-// ============================================================================
-// 2. FUNÇÕES AUXILIARES DE POSIÇÃO E ERROS
-// ============================================================================
-${ignorarStringsEComentarios.toString()}
-
-${formatarPosicao.toString()}
-
-${criarIndicadorErro.toString()}
-
-// ============================================================================
-// 3. TRATAMENTO DE STRINGS INCOMPLETAS (EVITA ERRO EM CASCATA)
-// ============================================================================
-${stringEstaFechada.toString()}
-
-${encontrarStringIncompleta.toString()}
-
-// ============================================================================
-// 4. ANÁLISE SINTÁTICA COM ESTRUTURA DE DADOS PILHA (LIFO)
-// Complexidade de Tempo: O(n) • Varredura linear em única passagem
-// Complexidade de Espaço: O(n) no pior caso
-// ============================================================================
-${analisarCodigo.toString()}`;
-
-codigoAnalise.textContent = textoCodigoAlgoritmo;
+textoCodigoAlgoritmo = [
+  "// Validador de delimitadores: pilha LIFO; não é um compilador completo.",
+  `const pares = ${JSON.stringify(pares)};`,
+  `const padraoTextos = ${padraoTextos};`,
+  ignorarStringsEComentarios.toString(),
+  formatarPosicao.toString(),
+  criarIndicadorErro.toString(),
+  stringEstaFechada.toString(),
+  encontrarStringIncompleta.toString(),
+  analisarCodigo.toString()
+].join("\n\n");
 renderizarAlgoritmoDestacado(textoCodigoAlgoritmo);
